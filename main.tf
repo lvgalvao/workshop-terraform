@@ -8,8 +8,15 @@ terraform {
 }
 
 provider "docker" {
-  host = "unix:///Users/lucianogalvao/.docker/run/docker.sock"
+  host = var.docker_host
 }
+
+variable "docker_host" {
+  description = "Docker host path"
+  type        = string
+  default     = "unix:///var/run/docker.sock"
+}
+
 resource "random_string" "suffix" {
   length  = 4
   special = false

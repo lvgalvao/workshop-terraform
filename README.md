@@ -13,12 +13,14 @@ Este projeto demonstra como usar o Terraform para provisionar um container Docke
 .
 ├── app.py
 ├── Dockerfile
-└── main.tf
+├── main.tf
+└── terraform.tfvars (opcional)
 ```
 
 - **app.py**: Arquivo de aplicação Streamlit.
 - **Dockerfile**: Dockerfile para criar a imagem Docker personalizada.
 - **main.tf**: Arquivo de configuração do Terraform.
+- **terraform.tfvars** (opcional): Arquivo para definir variáveis específicas do ambiente.
 
 ## Conteúdo dos Arquivos
 
@@ -59,7 +61,13 @@ terraform {
 }
 
 provider "docker" {
-  host = "unix:///var/run/docker.sock"
+  host = var.docker_host
+}
+
+variable "docker_host" {
+  description = "Docker host path"
+  type        = string
+  default     = "unix:///var/run/docker.sock"
 }
 
 resource "random_string" "suffix" {
@@ -94,34 +102,85 @@ output "container_name" {
 }
 ```
 
+### terraform.tfvars (opcional)
+
+```hcl
+docker_host = "unix:///Users/lucianogalvao/.docker/run/docker.sock"
+```
+
 ## Passos para Executar o Projeto
 
-### 1. Inicialize o Terraform
+### Executando sem Alterar o Caminho do Docker
+
+Por padrão, o Terraform usará o caminho do Docker host definido como `unix:///var/run/docker.sock`.
+
+#### 1. Inicialize o Terraform
 
 ```bash
 terraform init
 ```
 
-### 2. Crie um Plano de Execução
+#### 2. Crie um Plano de Execução
 
 ```bash
 terraform plan
 ```
 
-### 3. Aplique o Plano
+#### 3. Aplique o Plano
 
 ```bash
 terraform apply
 ```
 
-### 4. Verifique a Aplicação
+#### 4. Verifique a Aplicação
 
 Abra um navegador e vá para `http://localhost:8501`. Você deve ver a aplicação Streamlit.
 
-### 5. Destrua a Infraestrutura (se necessário)
+#### 5. Destrua a Infraestrutura (se necessário)
 
 ```bash
 terraform destroy
+```
+
+### Executando com o Caminho do Docker Personalizado
+
+Se precisar definir um caminho específico para o Docker host, você pode usar o arquivo `terraform.tfvars`.
+
+#### 1. Defina o Caminho do Docker Host
+
+Crie um arquivo `terraform.tfvars` no mesmo diretório que o `main.tf` com o seguinte conteúdo:
+
+**terraform.tfvars**
+```hcl
+docker_host = "unix:///Users/lucianogalvao/.docker/run/docker.sock"
+```
+
+#### 2. Inicialize o Terraform
+
+```bash
+terraform init
+```
+
+#### 3. Crie um Plano de Execução
+
+```bash
+terraform plan -var-file="terraform.tfvars"
+```
+
+#### 4. Aplique o Plano
+
+```bash
+terraform apply -var-file="terraform.tfvars"
+```
+
+#### 5. Verifique a Aplicação
+
+Abra um navegador e vá para `http://localhost:8501`. Você deve ver a aplicação Streamlit.
+
+#### 6. Destrua a Infraestrutura (se necessário)
+
+```bash
+terraform destroy -var-file="terraform.tfvars"
 ```
 
 ## Notas Adicionais
@@ -133,4 +192,4 @@ terraform destroy
 
 ## Autor
 
-Desenvolvido por Luciano Vasconcelos
+Desenvolvido por Luciano Galvão
