@@ -9,7 +9,7 @@ Este projeto demonstra como usar o Terraform para provisionar um container Docke
 
 ## Estrutura do Projeto
 
-```
+```bash
 .
 ├── app.py
 ├── Dockerfile
@@ -156,7 +156,8 @@ docker build -t mystreamlitapp .
 
 Crie um arquivo `terraform.tfvars` no mesmo diretório que o `main.tf` com o seguinte conteúdo:
 
-**terraform.tfvars**
+##### terraform.tfvars
+
 ```hcl
 docker_host = "unix:///Users/lucianogalvao/.docker/run/docker.sock"
 ```
@@ -194,8 +195,4 @@ terraform destroy -var-file="terraform.tfvars"
 - Certifique-se de que o Docker está instalado e rodando no seu sistema.
 - Certifique-se de que os arquivos `app.py` e `Dockerfile` estão no mesmo diretório onde você está executando o Terraform.
 - Verifique a construção da imagem Docker com `docker images` para ver se a imagem `mystreamlitapp` foi construída corretamente.
-- Verifique os containers em execução com `docker ps` para ver quais containers estão em execução e verifique se há um container chamado `streamlit_app_<random_suffix>`.
-
-## Autor
-
-Desenvolvido por Luciano Galvão
+- Verifique os containers em execução com `docker ps` para ver quais containers estão em execução e verifique se há um container chamado `streamlit_app_<random_suffix>`
