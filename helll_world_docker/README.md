@@ -146,6 +146,12 @@ terraform destroy
 
 Se precisar definir um caminho específico para o Docker host, você pode usar o arquivo `terraform.tfvars`.
 
+### 0. Crie a imagem docker
+
+```bash
+docker build -t mystreamlitapp . 
+```
+
 #### 1. Defina o Caminho do Docker Host
 
 Crie um arquivo `terraform.tfvars` no mesmo diretório que o `main.tf` com o seguinte conteúdo:

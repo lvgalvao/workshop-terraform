@@ -8,7 +8,7 @@
 
 ```mermaid
 graph TD;
-    subgraph Local_Files
+    subgraph Arquivos_Locais
         A[main.tf]
         C[variables.tf]
         D[outputs.tf]
@@ -17,20 +17,20 @@ graph TD;
 
     subgraph Cloud
         G[AWS API]
-        H[AWS Infrastructure]
-        F[Remote Backend]
+        H[Infraestrutura AWS]
+        F[Backend Remoto]
     end
 
     subgraph Terraform_CLI
-        B[Terraform Binary]
+        B[Binário do Terraform]
     end
 
-    Local_Files --> |define resources, variables, and outputs| B
-    E --> |stores state| B
-    B --> |queries state| G
-    G --> |returns state| B
-    B --> |manages| H
-    B --> |stores state| F
+    Arquivos_Locais --> |define recursos, variáveis e outputs| B
+    E --> |armazena estado| B
+    B --> |consulta estado| G
+    G --> |retorna estado| B
+    B --> |gerencia| H
+    B --> |armazena estado| F
 ```
 
 ### Descrição da Estrutura:
