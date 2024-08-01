@@ -1,195 +1,59 @@
-# Projeto Terraform com Docker e Streamlit
+# Workshop Terraform
 
-Este projeto demonstra como usar o Terraform para provisionar um container Docker rodando uma aplicação Streamlit. O exemplo inclui a definição de uma aplicação Streamlit mínima, a criação de uma imagem Docker personalizada e o uso do Terraform para gerenciar o container.
+## Excalidraw
 
-## Pré-requisitos
+[Excalidraw](https://link.excalidraw.com/l/8pvW6zbNUnD/8ACp9pQ84Oz)
 
-- [Docker](https://www.docker.com/get-started)
-- [Terraform](https://learn.hashicorp.com/terraform/getting-started/install)
+## O que é o Terraform
 
-## Estrutura do Projeto
+```mermaid
+graph TD;
+    subgraph Local_Files
+        A[main.tf]
+        C[variables.tf]
+        D[outputs.tf]
+        E[terraform.tfstate]
+    end
 
-```
-.
-├── app.py
-├── Dockerfile
-├── main.tf
-└── terraform.tfvars (opcional)
-```
+    subgraph Cloud
+        G[AWS API]
+        H[AWS Infrastructure]
+        F[Remote Backend]
+    end
 
-- **app.py**: Arquivo de aplicação Streamlit.
-- **Dockerfile**: Dockerfile para criar a imagem Docker personalizada.
-- **main.tf**: Arquivo de configuração do Terraform.
-- **terraform.tfvars** (opcional): Arquivo para definir variáveis específicas do ambiente.
+    subgraph Terraform_CLI
+        B[Terraform Binary]
+    end
 
-## Conteúdo dos Arquivos
-
-### app.py
-
-```python
-import streamlit as st
-
-st.title("Hello, Streamlit!")
-st.write("This is a simple Streamlit application.")
-```
-
-### Dockerfile
-
-```Dockerfile
-FROM python:3.9
-
-RUN pip install streamlit
-
-COPY ./app.py /app/app.py
-
-WORKDIR /app
-
-ENTRYPOINT ["streamlit", "run"]
-CMD ["app.py"]
+    Local_Files --> |define resources, variables, and outputs| B
+    E --> |stores state| B
+    B --> |queries state| G
+    G --> |returns state| B
+    B --> |manages| H
+    B --> |stores state| F
 ```
 
-### main.tf
+### Descrição da Estrutura:
 
-```hcl
-terraform {
-  required_providers {
-    docker = {
-      source  = "kreuzwerker/docker"
-      version = "~> 3.0.1"
-    }
-  }
-}
+1. **Arquivos Locais**:
+    - `main.tf`: Define os recursos que serão gerenciados pelo Terraform.
+    - `variables.tf`: Define as variáveis que podem ser usadas em `main.tf` e outros arquivos.
+    - `outputs.tf`: Define os outputs que serão retornados após a aplicação das configurações.
+    - `terraform.tfstate`: Armazena o estado atual da infraestrutura gerenciada pelo Terraform.
 
-provider "docker" {
-  host = var.docker_host
-}
+2. **Terraform CLI**:
+    - Binário do Terraform que lê os arquivos `.tf`, aplica as configurações e gerencia o estado.
 
-variable "docker_host" {
-  description = "Docker host path"
-  type        = string
-  default     = "unix:///var/run/docker.sock"
-}
+3. **Cloud**:
+    - `AWS API`: Interface de programação de aplicativos que o Terraform usa para consultar o estado atual da infraestrutura na AWS.
+    - `AWS Infrastructure`: Representa a infraestrutura na AWS gerenciada pelo Terraform.
+    - `Remote Backend`: Pode ser usado para armazenar o estado do Terraform remotamente (ex.: S3, Azure Blob Storage, etc.).
 
-resource "random_string" "suffix" {
-  length  = 4
-  special = false
-  upper   = false
-}
+### Processo de Funcionamento:
 
-resource "docker_image" "streamlit" {
-  name         = "mystreamlitapp:latest"
-  build {
-    context = "."
-  }
-  keep_locally = false
-}
-
-resource "docker_container" "streamlit" {
-  image = docker_image.streamlit.image_id
-  name  = "streamlit_app_${random_string.suffix.result}"
-  ports {
-    internal = 8501
-    external = 8501
-  }
-}
-
-output "container_id" {
-  value = docker_container.streamlit.id
-}
-
-output "container_name" {
-  value = docker_container.streamlit.name
-}
-```
-
-### terraform.tfvars (opcional)
-
-```hcl
-docker_host = "unix:///Users/lucianogalvao/.docker/run/docker.sock"
-```
-
-## Passos para Executar o Projeto
-
-### Executando sem Alterar o Caminho do Docker
-
-Por padrão, o Terraform usará o caminho do Docker host definido como `unix:///var/run/docker.sock`.
-
-#### 1. Inicialize o Terraform
-
-```bash
-terraform init
-```
-
-#### 2. Crie um Plano de Execução
-
-```bash
-terraform plan
-```
-
-#### 3. Aplique o Plano
-
-```bash
-terraform apply
-```
-
-#### 4. Verifique a Aplicação
-
-Abra um navegador e vá para `http://localhost:8501`. Você deve ver a aplicação Streamlit.
-
-#### 5. Destrua a Infraestrutura (se necessário)
-
-```bash
-terraform destroy
-```
-
-### Executando com o Caminho do Docker Personalizado
-
-Se precisar definir um caminho específico para o Docker host, você pode usar o arquivo `terraform.tfvars`.
-
-#### 1. Defina o Caminho do Docker Host
-
-Crie um arquivo `terraform.tfvars` no mesmo diretório que o `main.tf` com o seguinte conteúdo:
-
-**terraform.tfvars**
-```hcl
-docker_host = "unix:///Users/lucianogalvao/.docker/run/docker.sock"
-```
-
-#### 2. Inicialize o Terraform
-
-```bash
-terraform init
-```
-
-#### 3. Crie um Plano de Execução
-
-```bash
-terraform plan -var-file="terraform.tfvars"
-```
-
-#### 4. Aplique o Plano
-
-```bash
-terraform apply -var-file="terraform.tfvars"
-```
-
-#### 5. Verifique a Aplicação
-
-Abra um navegador e vá para `http://localhost:8501`. Você deve ver a aplicação Streamlit.
-
-#### 6. Destrua a Infraestrutura (se necessário)
-
-```bash
-terraform destroy -var-file="terraform.tfvars"
-```
-
-## Notas Adicionais
-
-- Certifique-se de que o Docker está instalado e rodando no seu sistema.
-- Certifique-se de que os arquivos `app.py` e `Dockerfile` estão no mesmo diretório onde você está executando o Terraform.
-- Verifique a construção da imagem Docker com `docker images` para ver se a imagem `mystreamlitapp` foi construída corretamente.
-- Verifique os containers em execução com `docker ps` para ver quais containers estão em execução e verifique se há um container chamado `streamlit_app_<random_suffix>`.
-
-## Autor
-
-Desenvolvido por Luciano Galvão
+- Os arquivos locais (`main.tf`, `variables.tf`, `outputs.tf`) definem os recursos, variáveis e outputs para o Terraform.
+- O arquivo `terraform.tfstate` armazena o estado atual da infraestrutura gerenciada.
+- O Terraform Binary lê as definições dos arquivos locais e o estado armazenado.
+- O Terraform consulta o estado atual da infraestrutura na cloud através da `AWS API`.
+- Com base na comparação entre o estado armazenado e o estado atual consultado, o Terraform aplica as mudanças necessárias na `AWS Infrastructure`.
+- O estado pode ser armazenado remotamente em um `Remote Backend` para facilitar a colaboração e a segurança.
