@@ -2,6 +2,8 @@
 
 Bem-vindo ao **Workshop de Terraform para Profissionais de Dados**! Este projeto faz parte de um workshop prático exclusivo para os alunos da **Escola Jornada de Dados**.
 
+![Imagem](./pics/terraform.jpeg)
+
 ## Sobre o Workshop
 
 **Data:** Sábado, 10 de Agosto  
