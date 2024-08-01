@@ -297,13 +297,13 @@ resource "aws_instance" "app_server" {
 }
 ```
 
-1. **Inicialize a Configuração**
+##### **Inicialize a Configuração**
 
 ```sh
 terraform init
 ```
 
-2. **Aplique a Configuração**
+##### **Aplique a Configuração**
 
 ```sh
 terraform apply
@@ -341,7 +341,7 @@ O comando `terraform destroy` termina os recursos gerenciados pelo seu projeto T
 
 #### Passos para Destruir Recursos
 
-1. **Destruir Recursos**
+##### **Destruir Recursos**
 
 Execute o comando para destruir os recursos que você criou:
 
@@ -349,7 +349,7 @@ Execute o comando para destruir os recursos que você criou:
 terraform destroy
 ```
 
-2. **Confirme a Destruição**
+##### **Confirme a Destruição**
 
 O Terraform mostrará um plano de execução que descreve as ações que serão tomadas para destruir a infraestrutura. Confirme a execução digitando `yes` quando solicitado.
 
@@ -429,13 +429,13 @@ resource "aws_instance" "app_server" {
 
 ### Aplicar a Configuração
 
-1. **Inicialize a Configuração**
+#### Inicialize a Configuração
 
 ```sh
 terraform init
 ```
 
-2. **Aplique a Configuração**
+#### Aplique a Configuração
 
 ```sh
 terraform apply
@@ -453,4 +453,4 @@ Aplique a configuração novamente, desta vez sobrescrevendo o nome padrão da i
 terraform apply -var "instance_name=YetAnotherName"
 ```
 
-Responda ao prompt de confirmação com `yes`. O Terraform atualizará a tag `Name` da instância com o novo nome.
+Responda ao prompt de confirmação com `yes`. O Terraform atualizará a tag `Name` da instância com o novo nome
