@@ -1,456 +1,261 @@
-# Introdução à Cloud
+# Executando Terraform no Docker
 
-## O que é Cloud?
+O comando abaixo é usado para executar o Terraform dentro de um contêiner Docker. Esta abordagem é útil quando você deseja isolar seu ambiente Terraform ou evitar a instalação do Terraform diretamente no seu sistema operacional.
 
-A computação em nuvem, ou simplesmente "cloud", é a entrega de diferentes serviços pela internet. Esses serviços incluem armazenamento, bancos de dados, servidores, redes, software, entre outros. A cloud permite que empresas e indivíduos utilizem recursos de computação e armazenamento conforme necessário, pagando apenas pelo que usam, sem a necessidade de possuir e manter infraestrutura física.
-
-### Vantagens da Computação em Nuvem
-
-- **Escalabilidade:** Capacidade de aumentar ou diminuir recursos conforme a demanda.
-- **Custo-Efetivo:** Pague apenas pelo que usa, eliminando a necessidade de grandes investimentos iniciais em hardware.
-- **Acessibilidade:** Acesso a recursos e dados de qualquer lugar com uma conexão à internet.
-- **Segurança:** Provedores de cloud oferecem altos níveis de segurança e conformidade com normas internacionais.
-
-### Diagrama da Estrutura de Cloud com AWS
-
-```mermaid
-graph TD;
-    subgraph Cloud
-        subgraph IAM_AWS
-           IAM[Identity and Access Management IAM]
-        end
-        subgraph EC2
-            subgraph Zona_Brasil
-                M1[Máquina 1]
-                M2[Máquina 2]
-            end
-            subgraph Zona_US
-                M3[Máquina 3]
-                M4[Máquina 4]
-            end
-        end
-    end
-
-    subgraph API_AWS
-        API[API AWS]
-    end
-
-
-    subgraph Camadas_de_Interação
-        Console[Console AWS]
-        CLI[Terminal AWS CLI]
-        Terraform[Terraform]
-    end
-
-    Console --> API
-    CLI --> API
-    Terraform --> API
-    API --> IAM
-    IAM --> EC2
+```sh
+docker run -it -v $PWD:/app -w /app --entrypoint "" hashicorp/terraform:light sh
 ```
 
-### Descrição do Diagrama
+Vamos detalhar cada parte desse comando:
 
-- **Cloud:** Representa a nuvem como um todo, onde os recursos são hospedados.
-- **EC2 (Elastic Compute Cloud):** Serviço de computação em nuvem da AWS que oferece capacidade de processamento escalável.
-  - **Zona Brasil:** Zona de disponibilidade que contém Máquinas 1 e 2.
-  - **Zona US:** Zona de disponibilidade que contém Máquinas 3 e 4.
-- **API AWS:** Interface de programação de aplicativos que permite interações automatizadas com os recursos AWS.
-- **IAM (Identity and Access Management):** Serviço da AWS que controla o acesso aos recursos da AWS.
-- **Camadas de Interação:** Diferentes formas de interagir e gerenciar os recursos na AWS.
-  - **Console AWS:** Interface gráfica da AWS para gerenciar e visualizar recursos.
-  - **Terminal AWS CLI:** Interface de linha de comando para gerenciar recursos AWS.
-  - **Terraform:** Ferramenta de infraestrutura como código para provisionar e gerenciar recursos na AWS.
+## Explicação do Comando
 
-### Exemplos de Uso
+- `docker run`: Inicia um novo contêiner Docker.
+- `-it`: As opções `-i` e `-t` combinadas permitem a execução interativa no terminal. `-i` mantém a entrada padrão aberta para o contêiner, e `-t` aloca um terminal TTY.
+- `-v $PWD:/app`: Monta o diretório atual do host (representado por `$PWD`, que significa "present working directory") no diretório `/app` dentro do contêiner. Isso permite que o contêiner acesse os arquivos do diretório atual do host.
+- `-w /app`: Define o diretório de trabalho dentro do contêiner para `/app`. Isso significa que todos os comandos serão executados nesse diretório.
+- `--entrypoint ""`: Substitui o entrypoint padrão do contêiner (que é o comando que é executado por padrão quando o contêiner é iniciado). Aqui, é substituído por uma string vazia para que possamos fornecer nosso próprio comando a ser executado.
+- `hashicorp/terraform:light`: Especifica a imagem Docker a ser usada. `hashicorp/terraform:light` é uma versão leve da imagem oficial do Terraform fornecida pela HashiCorp.
+- `sh`: O comando `sh` abre um shell dentro do contêiner, permitindo que você execute comandos interativamente.
 
-1. **Escalabilidade com EC2:**
-   - Suponha que sua aplicação precisa lidar com um aumento repentino de tráfego.
-   - Com EC2, você pode facilmente aumentar a capacidade adicionando mais instâncias (máquinas virtuais) na zona Brasil ou na zona US.
+### Benefícios de Executar Terraform no Docker
 
-2. **Automatização com Terraform:**
-   - Utilizando o Terraform, você pode definir a infraestrutura necessária em arquivos de configuração.
-   - Executando os comandos do Terraform, ele provisionará automaticamente os recursos na AWS conforme definido.
+1. **Isolamento do Ambiente:**
+   - Evita conflitos com outras versões ou configurações do Terraform instaladas no sistema host.
+   - Garante que o Terraform seja executado em um ambiente consistente, independentemente do sistema operacional do host.
 
-## Case AWS 01
+2. **Facilidade de Configuração:**
+   - Não requer instalação do Terraform no sistema host. Tudo é configurado e executado dentro do contêiner Docker.
 
-### O que é uma VPC?
+3. **Portabilidade:**
+   - Facilita a portabilidade do ambiente de desenvolvimento. Qualquer máquina que possa executar Docker pode usar essa configuração para rodar Terraform.
 
-**Virtual Private Cloud (VPC)** é um serviço da Amazon Web Services (AWS) que permite a criação de uma rede virtual privada dentro da infraestrutura de nuvem da AWS. A VPC proporciona controle total sobre o ambiente de rede virtual, incluindo a seleção de intervalos de endereços IP, criação de sub-redes, configuração de tabelas de roteamento e gateways de rede.
+4. **Reprodutibilidade:**
+   - Garante que o mesmo ambiente de execução seja usado em diferentes máquinas e contextos (desenvolvimento, CI/CD, etc.), reduzindo problemas relacionados a diferenças de ambiente.
 
-#### Características da VPC
+#### Passos para Executar Terraform no Docker
 
-- **Isolamento:** Cada VPC é logicamente isolada de outras VPCs na nuvem da AWS.
-- **Controle:** Proporciona controle total sobre a configuração de rede, permitindo definir endereços IP, criar sub-redes, configurar tabelas de roteamento e gateways de internet.
-- **Segurança:** Suporte a grupos de segurança e listas de controle de acesso (ACLs) para gerenciar e controlar o tráfego de entrada e saída.
+1. **Instalar Docker:**
+   - Certifique-se de que o Docker está instalado no seu sistema. Siga as instruções de instalação do Docker para seu sistema operacional específico.
 
-### O que é uma Sub-rede?
+2. **Navegar até o Diretório do Projeto:**
+   - Abra o terminal e navegue até o diretório onde seus arquivos de configuração do Terraform estão localizados.
 
-**Sub-rede** é uma divisão lógica de uma rede IP maior, como uma VPC. As sub-redes permitem a segmentação da rede em partes menores, facilitando a organização e a gestão dos recursos.
+3. **Executar o Comando Docker:**
+   - Execute o comando Docker mencionado acima para iniciar um contêiner com o Terraform:
 
-#### Características da Sub-rede
+     ```sh
+     docker run -it -v $PWD:/app -w /app --entrypoint "" hashicorp/terraform:light sh
+     ```
 
-- **Segmentação:** Divide a VPC em áreas menores e gerenciáveis, cada uma com um intervalo de endereços IP específico.
-- **Isolamento de Recursos:** Permite isolar recursos com diferentes requisitos de segurança e controle de acesso.
-- **Roteamento:** Cada sub-rede pode ter suas próprias tabelas de roteamento, definindo como o tráfego deve ser direcionado.
+4. **Executar Comandos Terraform:**
+   - Dentro do contêiner, você pode executar comandos Terraform como `terraform init`, `terraform plan`, `terraform apply`, etc.
 
-### O que é EC2?
+     ```sh
+     terraform init
+     terraform plan
+     terraform apply
+     ```
 
-**Amazon Elastic Compute Cloud (EC2)** é um serviço da AWS que fornece capacidade de computação redimensionável na nuvem. Ele permite o provisionamento de instâncias de servidores virtuais, que podem ser configuradas e gerenciadas conforme as necessidades do usuário.
+### Exemplo de Uso
 
-## Arquitetura
+Suponha que você tenha um arquivo `main.tf` no diretório atual com a configuração do Terraform. Para inicializar e aplicar essa configuração usando Docker, você faria o seguinte:
 
-```mermaid
-graph TD;
-    subgraph VPC["VPC: main_vpc"]
-        subgraph Subnet["Subnet: main_subnet"]
-            EC2["EC2 Instance: app_server"]
-        end
-    end
+1. **Inicializar o Terraform:**
 
-    EC2 -->|runs in| Subnet
-    Subnet -->|is part of| VPC
-```
+   ```sh
+   terraform init
+   ```
 
-## Código Terraform
+2. **Planejar a Infraestrutura:**
+
+   ```sh
+   terraform plan
+   ```
+
+3. **Aplicar a Configuração:**
+
+   ```sh
+   terraform apply
+   ```
+
+Esse processo garante que toda a infraestrutura seja gerenciada de maneira consistente e reprodutível, utilizando a imagem Docker do Terraform.
+
+### Vantagens de Armazenar o Estado do Terraform no S3
+
+Armazenar o estado do Terraform em um bucket S3 oferece várias vantagens em comparação ao armazenamento local. Aqui estão alguns dos principais benefícios:
+
+#### 1. **Colaboração**
+
+- **Acesso Compartilhado:**
+  - O estado armazenado no S3 pode ser acessado por múltiplos usuários e equipes, permitindo a colaboração eficiente no gerenciamento da infraestrutura.
+  - Facilita o trabalho em equipe, onde diferentes membros podem aplicar mudanças e atualizações na infraestrutura de forma coordenada.
+
+- **Bloqueio de Estado (State Locking):**
+  - Quando combinado com o DynamoDB, o S3 permite o bloqueio do estado, prevenindo condições de corrida onde múltiplos usuários tentam modificar o estado simultaneamente.
+  - Garante que apenas um processo do Terraform possa modificar o estado de cada vez, evitando inconsistências.
+
+#### 2. **Persistência e Recuperação**
+
+- **Backup Automático:**
+  - O S3 oferece alta durabilidade e replicação de dados, garantindo que o estado do Terraform esteja seguro e disponível.
+  - Facilita a recuperação em caso de falhas ou perda de dados, já que o estado pode ser restaurado a partir do S3.
+
+- **Versão de Arquivos:**
+  - O S3 suporta versionamento de arquivos, permitindo que você rastreie e restaure versões anteriores do estado do Terraform.
+  - Importante para auditar mudanças e reverter para um estado anterior em caso de erro.
+
+#### 3. **Escalabilidade e Desempenho**
+
+- **Escalabilidade:**
+  - O S3 é altamente escalável e pode lidar com grandes volumes de dados e requisições, suportando projetos Terraform de qualquer tamanho.
+  - Adequado para ambientes de produção onde a infraestrutura pode crescer significativamente.
+
+- **Desempenho:**
+  - O S3 é otimizado para alta performance, garantindo acesso rápido e eficiente ao estado do Terraform.
+  - Minimiza o tempo necessário para ler e escrever o estado durante operações do Terraform.
+
+#### 4. **Segurança**
+
+- **Controle de Acesso:**
+  - O S3 permite a configuração de políticas de controle de acesso (IAM policies), garantindo que apenas usuários autorizados possam acessar e modificar o estado do Terraform.
+  - Suporte para criptografia de dados em repouso e em trânsito, protegendo a confidencialidade e integridade do estado.
+
+- **Auditoria:**
+  - Com o AWS CloudTrail, você pode monitorar e registrar todas as atividades relacionadas ao acesso e modificação do estado no S3.
+  - Facilita a auditoria de mudanças e o cumprimento de requisitos de conformidade.
+
+#### Configuração do Backend S3 no Terraform
+
+Aqui está um exemplo de como configurar o backend S3 para armazenar o estado do Terraform:
 
 ```hcl
 terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
-
-  required_version = ">= 1.2.0"
-}
-
-provider "aws" {
-  region  = "us-west-2"
-}
-
-# Criação de uma nova VPC
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-
-  tags = {
-    Name = "main_vpc"
-  }
-}
-
-# Criação de uma sub-rede dentro da VPC
-resource "aws_subnet" "main" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-west-2a"
-
-  tags = {
-    Name = "main_subnet"
-  }
-}
-
-# Criação de uma instância EC2 dentro da sub-rede criada
-resource "aws_instance" "app_server" {
-  ami           = "ami-830c94e3"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.main.id
-
-  tags = {
-    Name = "ExampleAppServerInstance"
+  backend "s3" {
+    bucket         = "meu-bucket-terraform"
+    key            = "caminho/para/estado/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true  # Ativa a criptografia
+    dynamodb_table = "tabela-de-bloqueio-terraform"  # Requerido para state locking
   }
 }
 ```
 
-### Descrição das Modificações
+#### Passos para Configuração
 
-1. **Criação de uma VPC:**
-   - `aws_vpc` recurso para criar uma VPC com o bloco CIDR `10.0.0.0/16`.
+1. **Criar um Bucket S3:**
+   - Crie um bucket no S3 onde o estado será armazenado.
+   - Habilite o versionamento no bucket para rastrear mudanças no estado.
 
-2. **Criação de uma Sub-rede:**
-   - `aws_subnet` recurso para criar uma sub-rede dentro da VPC com o bloco CIDR `10.0.1.0/24` na zona de disponibilidade `us-west-2a`.
+2. **Configurar DynamoDB para State Locking:**
+   - Crie uma tabela DynamoDB que o Terraform usará para bloquear o estado durante operações.
+   - Configure o nome da tabela no backend S3 conforme mostrado no exemplo.
 
-3. **Especificação da Sub-rede na Instância EC2:**
-   - `subnet_id` parâmetro adicionado ao recurso `aws_instance` para associar a instância à sub-rede criada.
+3. **Definir o Backend no Arquivo de Configuração:**
+   - Adicione a configuração do backend S3 no arquivo de configuração do Terraform (`main.tf` ou equivalente).
 
-### Comandos Terraform
+4. **Inicializar o Backend:**
+   - Execute `terraform init` para inicializar a configuração e migrar o estado local para o S3.
 
-#### Terraform Block
+   ```sh
+   terraform init
+   ```
 
-O bloco `terraform {}` contém configurações do Terraform, incluindo os provedores necessários que o Terraform usará para provisionar sua infraestrutura. Para cada provedor, o atributo `source` define um hostname opcional, um namespace e o tipo de provedor. O Terraform instala provedores do Terraform Registry por padrão. Nesta configuração de exemplo, a fonte do provedor `aws` é definida como `hashicorp/aws`, que é uma abreviação para `registry.terraform.io/hashicorp/aws`.
+Ao seguir esses passos, você garante que o estado do Terraform seja armazenado de forma segura e colaborativa no S3, aproveitando todos os benefícios mencionados acima.
 
-Você também pode definir uma restrição de versão para cada provedor definido no bloco `required_providers`. O atributo `version` é opcional, mas recomendamos usá-lo para restringir a versão do provedor para que o Terraform não instale uma versão que não funcione com sua configuração. Se você não especificar uma versão do provedor, o Terraform fará o download automático da versão mais recente durante a inicialização.
+### Outputs e Data Sources no Terraform
 
-#### Providers
+No Terraform, `outputs` e `data sources` são dois conceitos importantes que ajudam a gerenciar e utilizar a infraestrutura de forma mais eficiente. Vamos entender cada um deles com base nos exemplos fornecidos.
 
-O bloco `provider` configura o provedor especificado, neste caso `aws`. Um provedor é um plugin que o Terraform usa para criar e gerenciar seus recursos.
+#### Outputs
 
-Você pode usar múltiplos blocos de provedor em sua configuração Terraform para gerenciar recursos de diferentes provedores. Você pode até usar diferentes provedores juntos. Por exemplo, você pode passar o endereço IP da sua instância EC2 da AWS para um recurso de monitoramento do DataDog.
+Os `outputs` no Terraform são usados para exportar valores de uma configuração para que possam ser facilmente acessados por outros módulos ou exibidos ao usuário após a execução do Terraform. Eles são definidos no arquivo `output.tf` e podem ser usados para retornar informações importantes sobre os recursos criados.
 
-#### Resources
-
-Use blocos `resource` para definir componentes de sua infraestrutura. Um recurso pode ser um componente físico ou virtual, como uma instância EC2, ou pode ser um recurso lógico, como uma aplicação Heroku.
-
-Os blocos de recursos têm duas strings antes do bloco: o tipo de recurso e o nome do recurso. Neste exemplo, o tipo de recurso é `aws_instance` e o nome é `app_server`. O prefixo do tipo mapeia para o nome do provedor. Na configuração de exemplo, o Terraform gerencia o recurso `aws_instance` com o provedor `aws`. Juntos, o tipo de recurso e o nome formam um ID único para o recurso. Por
-
- exemplo, o ID para sua instância EC2 é `aws_instance.app_server`.
-
-Os blocos de recursos contêm argumentos que você usa para configurar o recurso. Os argumentos podem incluir coisas como tamanhos de máquina, nomes de imagens de disco ou IDs de VPC. Nossa lista de provedores referencia os argumentos obrigatórios e opcionais para cada recurso. Para sua instância EC2, a configuração de exemplo define o ID do AMI como uma imagem do Ubuntu e o tipo de instância como `t2.micro`, que se qualifica para o nível gratuito da AWS. Também define uma tag para dar um nome à instância.
-
-#### Inicializar o Diretório
-
-Quando você cria uma nova configuração — ou verifica uma configuração existente a partir do controle de versão — você precisa inicializar o diretório com `terraform init`.
-
-Inicializar um diretório de configuração faz o download e instala os provedores definidos na configuração, que neste caso é o provedor `aws`.
-
-```sh
-terraform init
-```
-
-#### Formatar e Validar a Configuração
-
-Recomendamos usar formatação consistente em todos os seus arquivos de configuração. O comando `terraform fmt` atualiza automaticamente as configurações no diretório atual para legibilidade e consistência.
-
-```sh
-terraform fmt
-```
-
-Você também pode garantir que sua configuração seja sintaticamente válida e internamente consistente usando o comando `terraform validate`.
-
-```sh
-terraform validate
-```
-
-#### Criar Infraestrutura
-
-Aplique a configuração agora com o comando `terraform apply`. O Terraform imprimirá um plano de execução que descreve as ações que o Terraform tomará para alterar sua infraestrutura para corresponder à configuração.
-
-```sh
-terraform apply
-```
-
-#### Inspecionar o Estado
-
-Quando você aplica sua configuração, o Terraform grava dados em um arquivo chamado `terraform.tfstate`. O Terraform armazena os IDs e propriedades dos recursos que gerencia neste arquivo, para que possa atualizar ou destruir esses recursos no futuro.
-
-Inspecione o estado atual usando `terraform show`.
-
-```sh
-terraform show
-```
-
-#### Gerenciar o Estado Manualmente
-
-O Terraform tem um comando embutido chamado `terraform state` para gerenciamento avançado de estado. Use o subcomando `list` para listar os recursos no estado do seu projeto.
-
-```sh
-terraform state list
-```
-
-### Modificar Infraestrutura
-
-A infraestrutura está em constante evolução, e o Terraform ajuda você a gerenciar essas mudanças. Ao modificar configurações do Terraform, ele cria um plano de execução que altera apenas o necessário para alcançar o estado desejado.
-
-#### Código Modificado
+**Exemplo de Output:**
 
 ```hcl
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
-  required_version = ">= 1.2.0"
-}
-
-provider "aws" {
-  region  = "us-west-2"
-}
-
-# Criação de uma nova VPC
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-  tags = {
-    Name = "main_vpc"
-  }
-}
-
-# Criação de uma sub-rede dentro da VPC
-resource "aws_subnet" "main" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-west-2a"
-  tags = {
-    Name = "main_subnet"
-  }
-}
-
-# Criação de uma instância EC2 dentro da sub-rede criada
-resource "aws_instance" "app_server" {
-  ami           = "ami-08d70e59c07c61a3a"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.main.id
-  tags = {
-    Name = "ExampleAppServerInstance"
-  }
+output "ip_address" {
+  value = aws_instance.web.public_ip
 }
 ```
 
-##### **Inicialize a Configuração**
+**Descrição:**
+- **Nome do Output:** `ip_address` – Este é o identificador do output, que pode ser referenciado em outros lugares.
+- **Valor do Output:** `aws_instance.web.public_ip` – Este é o valor que será exportado. No exemplo, estamos exportando o endereço IP público da instância EC2 chamada `web`.
 
-```sh
-terraform init
-```
+**Benefícios dos Outputs:**
+- **Facilidade de Acesso:** Outputs tornam fácil acessar informações importantes, como endereços IP, URLs, IDs de recursos, etc.
+- **Reutilização:** Outputs podem ser referenciados em outras configurações do Terraform, facilitando a reutilização de valores.
+- **Automatização:** Outputs podem ser usados em scripts ou integrações para automatizar tarefas após a criação da infraestrutura.
 
-##### **Aplique a Configuração**
+#### Data Sources
 
-```sh
-terraform apply
-```
+Os `data sources` permitem que o Terraform leia e utilize informações sobre recursos existentes que não são gerenciados pelo Terraform ou que foram criados por outros meios. Eles são definidos no arquivo de configuração e podem ser usados para buscar dados que podem ser referenciados em recursos gerenciados pelo Terraform.
 
-Após aplicar com sucesso a configuração inicial, você pode continuar com as modificações.
-
-#### Modificar a Configuração
-
-Atualize o AMI da sua instância. Altere o recurso `aws_instance.app_server` substituindo o ID do AMI atual por um novo.
-
-```diff
- resource "aws_instance" "app_server" {
--  ami           = "ami-830c94e3"
-+  ami           = "ami-08d70e59c07c61a3a"
-   instance_type = "t2.micro"
- }
-```
-
-#### Aplicar Mudanças
-
-Depois de alterar a configuração, execute `terraform apply` novamente para ver como o Terraform aplicará essa mudança aos recursos existentes.
-
-Esses passos e código atualizado mostram como modificar a infraestrutura existente usando o Terraform, garantindo que apenas as mudanças necessárias sejam aplicadas para alcançar o estado desejado.
-
-### Destruir Infraestrutura com Terraform
-
-Agora que você criou e atualizou uma instância EC2 na AWS com Terraform, vamos aprender a destruir essa infraestrutura.
-
-Quando você não precisar mais da infraestrutura, pode ser desejável destruí-la para reduzir a exposição a riscos de segurança e custos. Por exemplo, você pode remover um ambiente de produção do serviço ou gerenciar ambientes de curta duração, como sistemas de compilação ou teste. Além de construir e modificar a infraestrutura, o Terraform também pode destruir ou recriar a infraestrutura que ele gerencia.
-
-#### Destruir Infraestrutura
-
-O comando `terraform destroy` termina os recursos gerenciados pelo seu projeto Terraform. Este comando é o inverso do `terraform apply`, pois termina todos os recursos especificados no estado do Terraform. Ele não destrói recursos que estão sendo executados em outros lugares e que não são gerenciados pelo projeto Terraform atual.
-
-#### Passos para Destruir Recursos
-
-##### **Destruir Recursos**
-
-Execute o comando para destruir os recursos que você criou:
-
-```sh
-terraform destroy
-```
-
-##### **Confirme a Destruição**
-
-O Terraform mostrará um plano de execução que descreve as ações que serão tomadas para destruir a infraestrutura. Confirme a execução digitando `yes` quando solicitado.
-
-```sh
-Do you really want to destroy all resources?
-Terraform will destroy all your managed infrastructure, as shown above.
-There is no undo. Only 'yes' will be accepted to confirm.
-
-Enter a value: yes
-```
-
-### Define Input Variables
-
-Agora que você já tem conhecimento suficiente sobre o Terraform para criar configurações úteis, vamos tornar nossa configuração mais dinâmica e flexível utilizando variáveis.
-
-#### Pré-requisitos
-
-Após seguir os tutoriais anteriores, você deve ter um diretório chamado `learn-terraform-aws-instance` com a seguinte configuração em um arquivo chamado `main.tf`.
+**Exemplo de Data Source:**
 
 ```hcl
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
-  required_version = ">= 1.2.0"
-}
+data "aws_ami" "ubuntu" {
+  most_recent = true
 
-provider "aws" {
-  region  = "us-west-2"
-}
-
-resource "aws_instance" "app_server" {
-  ami           = "ami-08d70e59c07c61a3a"
-  instance_type = "t2.micro"
-  tags = {
-    Name = "ExampleAppServerInstance"
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
+
+  owners = ["099720109477"] # Ubuntu
 }
 ```
 
-### Definindo Variáveis de Entrada
+**Descrição:**
+- **Data Source:** `aws_ami` – Este data source é usado para buscar informações sobre uma Amazon Machine Image (AMI) existente.
+- **Nome do Data Source:** `ubuntu` – Identificador do data source.
+- **Parâmetros:**
+  - **most_recent:** Define que o AMI mais recente deve ser selecionado.
+  - **filter:** Aplica filtros para selecionar o AMI baseado em seu nome. No exemplo, ele busca AMIs que correspondem ao padrão `"ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"`.
+  - **owners:** Define o proprietário do AMI. No exemplo, `099720109477` é o ID do proprietário das AMIs oficiais do Ubuntu.
 
-A configuração atual inclui vários valores fixos. As variáveis do Terraform permitem que você escreva configurações mais flexíveis e fáceis de reutilizar.
+**Benefícios dos Data Sources:**
+- **Integração:** Permite integrar recursos existentes que não são gerenciados pelo Terraform.
+- **Atualização Dinâmica:** Facilita o uso de informações dinâmicas, como buscar o AMI mais recente, sem a necessidade de atualização manual.
+- **Flexibilidade:** Data sources oferecem flexibilidade ao permitir que você use dados externos em sua configuração do Terraform.
 
-#### Criar Variável para Nome da Instância
+#### Exemplo Completo com Resource Referenciando Data Source
 
-Adicione uma variável para definir o nome da instância.
-
-Crie um novo arquivo chamado `variables.tf` com um bloco definindo uma nova variável `instance_name`.
+**Arquivo `ec2.tf`:**
 
 ```hcl
-variable "instance_name" {
-  description = "Value of the Name tag for the EC2 instance"
-  type        = string
-  default     = "ExampleAppServerInstance"
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  owners = ["099720109477"] # Ubuntu
 }
-```
 
-O Terraform carrega todos os arquivos no diretório atual que terminam em `.tf`, portanto, você pode nomear seus arquivos de configuração como preferir.
-
-#### Atualizar `main.tf`
-
-No arquivo `main.tf`, atualize o bloco do recurso `aws_instance` para usar a nova variável. O bloco da variável `instance_name` usará seu valor padrão ("ExampleAppServerInstance") a menos que você declare um valor diferente.
-
-```hcl
-resource "aws_instance" "app_server" {
-  ami           = "ami-08d70e59c07c61a3a"
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
+
   tags = {
-    Name = var.instance_name
+    Name = "HelloWorld"
   }
 }
 ```
 
-### Aplicar a Configuração
+**Descrição:**
+- **Data Source:** `aws_ami.ubuntu` – Busca o AMI mais recente do Ubuntu 20.04.
+- **Resource:** `aws_instance.web` – Cria uma instância EC2 usando o AMI obtido pelo data source.
+  - **ami:** Refere-se ao ID do AMI obtido pelo data source `data.aws_ami.ubuntu.id`.
+  - **instance_type:** Define o tipo da instância como `t2.micro`.
+  - **tags:** Adiciona uma tag `Name` com valor `HelloWorld`.
 
-#### Inicialize a Configuração
+#### Resumo:
 
-```sh
-terraform init
-```
+- **Outputs:** Exportam valores de uma configuração para fácil acesso e reutilização. No exemplo, o endereço IP público da instância EC2 é exportado.
+- **Data Sources:** Permitem buscar e usar informações sobre recursos existentes. No exemplo, busca o AMI mais recente do Ubuntu 20.04 e o usa para criar uma instância EC2.
 
-#### Aplique a Configuração
-
-```sh
-terraform apply
-```
-
-Responda ao prompt de confirmação com `yes`.
-
-O Terraform criará a instância EC2 com o nome definido na variável `instance_name`.
-
-### Sobrescrever Variável na Linha de Comando
-
-Aplique a configuração novamente, desta vez sobrescrevendo o nome padrão da instância passando uma variável com o flag `-var`.
-
-```sh
-terraform apply -var "instance_name=YetAnotherName"
-```
-
-Responda ao prompt de confirmação com `yes`. O Terraform atualizará a tag `Name` da instância com o novo nome
+Utilizar `outputs` e `data sources` de forma eficaz pode tornar suas configurações do Terraform mais flexíveis, reutilizáveis e integradas com recursos existentes na sua infraestrutura.

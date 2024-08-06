@@ -13,7 +13,7 @@ Bem-vindo ao **Workshop de Terraform para Profissionais de Dados**! Este projeto
 
 ### Objetivos do Workshop
 
-- Introduzir os conceitos básicos e avançados do Terraform.
+- Introduzir os conceitos do Terraform.
 - Capacitar os alunos a gerenciar e automatizar a infraestrutura de cloud com foco em AWS.
 - Demonstrar práticas recomendadas para o uso do Terraform em ambientes de produção.
 
