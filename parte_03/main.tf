@@ -1,19 +1,49 @@
-terraform { 
+terraform {
   required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.61.0"
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0.1"
     }
-  }
-  backend "s3" {
-    # Lembre de trocar o bucket para o seu, não pode ser o mesmo nome
-    bucket         = "descomplicando-terraform-12345"
-    key            = "terraform-test.tfstate"
-    region         = "us-east-1"
-    encrypt        = true  # Ativa a criptografia
   }
 }
 
-provider "aws" {
-  region = "us-east-1"
+provider "docker" {
+  host = var.docker_host
+}
+
+variable "docker_host" {
+  description = "Docker host path"
+  type        = string
+  default     = "unix:///var/run/docker.sock"
+}
+
+resource "random_string" "suffix" {
+  length  = 4
+  special = false
+  upper   = false
+}
+
+resource "docker_image" "streamlit" {
+  name         = "mystreamlitapp:latest"
+  build {
+    context = "."
+  }
+  keep_locally = false
+}
+
+resource "docker_container" "streamlit" {
+  image = docker_image.streamlit.image_id
+  name  = "streamlit_app_${random_string.suffix.result}"
+  ports {
+    internal = 8501
+    external = 8501
+  }
+}
+
+output "container_id" {
+  value = docker_container.streamlit.id
+}
+
+output "container_name" {
+  value = docker_container.streamlit.name
 }
