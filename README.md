@@ -8,7 +8,7 @@ Bem-vindo ao **Workshop de Terraform para Profissionais de Dados**! Este projeto
 
 **Data:** Sábado, 10 de Agosto  
 **Horário:** 9:00 da manhã  
-**Duração:** 5 horas  
+**Duração:** 4 horas  
 **Público:** Exclusivo para alunos da Jornada de Dados
 
 ### Objetivos do Workshop
@@ -17,61 +17,62 @@ Bem-vindo ao **Workshop de Terraform para Profissionais de Dados**! Este projeto
 - Capacitar os alunos a gerenciar e automatizar a infraestrutura de cloud com foco em AWS.
 - Demonstrar práticas recomendadas para o uso do Terraform em ambientes de produção.
 
-### Agenda
+Obrigado pela atualização! Aqui está a pauta ajustada para o workshop de Terraform, com o horário correto:
 
-#### Introdução e Fundamentos
+### 1. Abertura - O que queremos resolver? (9:00 - 9:30)
+   - **Objetivo**: Introduzir o Terraform, discutindo a importância de automação e a infraestrutura como código (IaC) para engenheiros de dados.
+   - **Atividades**:
+     - Apresentação dos objetivos do treinamento.
+     - Discussão sobre os desafios de gerenciar infraestrutura em nuvem manualmente e como o Terraform pode ajudar.
 
-- **Conceitos Básicos de Infraestrutura como Código (IaC)**
-  - O que é IaC?
-  - Benefícios do IaC
-  - Visão geral do Terraform
+### 2. Subindo uma aplicação de API sem Terraform na AWS (9:30 - 10:00)
+   - **Objetivo**: Demonstrar o processo manual de deploy de uma aplicação de API na AWS, sem utilizar Terraform.
+   - **Atividades**:
+     - Configuração manual da infraestrutura (EC2, Security Groups, etc.).
+     - Deploy manual da aplicação API.
+     - Discussão sobre as limitações desse processo manual.
 
-- **Instalação e Configuração**
-  - Instalação do Terraform
-  - Configuração inicial e providers (foco em AWS)
-  - Primeiros passos com o Terraform CLI
+### 3. Subindo a mesma aplicação utilizando Terraform e comparações (10:00 - 10:30)
+   - **Objetivo**: Mostrar como o Terraform pode automatizar o processo anterior e comparar as duas abordagens.
+   - **Atividades**:
+     - Criação e execução de um script Terraform para replicar a infraestrutura e aplicação.
+     - Comparação dos métodos manual e automatizado.
+     - Discussão sobre boas práticas no uso do Terraform.
 
-- **Estrutura do Terraform**
-  - Arquivos e diretórios
-  - Configuração básica: `main.tf`, `variables.tf`, e `outputs.tf`
-  - Estado do Terraform (`terraform.tfstate`)
+### 4. Trabalhando com Terraform sem gastar nada utilizando LocalStack (10:30 - 11:00)
+   - **Objetivo**: Demonstrar como usar o LocalStack para simular serviços AWS localmente.
+   - **Atividades**:
+     - Configuração do LocalStack.
+     - Execução de scripts Terraform no ambiente simulado.
+     - Discussão sobre as limitações e usos práticos do LocalStack.
 
-### Implementações e Prática
+### 5. Subindo um dashboard com porta liberada externa e IP fixo na AWS (11:00 - 11:30)
+   - **Objetivo**: Configurar um dashboard na AWS usando Terraform, com acesso externo e IP fixo.
+   - **Atividades**:
+     - Configuração de um dashboard na AWS.
+     - Ajustes de Security Groups e IP fixo.
+     - Testes de acesso externo.
 
-- **Primeira Implementação**
-  - Subindo uma aplicação de Docker no Streamlit
-  - Uso de variáveis e outputs
-  - Comandos básicos: `init`, `plan`, `apply`, e `destroy`
+### 6. Entrando em detalhes do módulo do Terraform e revisão do código (11:30 - 12:00)
+   - **Objetivo**: Modularizar o código Terraform para melhor reutilização e manutenção.
+   - **Atividades**:
+     - Criação de módulos Terraform.
+     - Refatoração do código existente para uso de módulos.
+     - Melhores práticas na organização do código.
 
-- **Segunda Implementação**
-  - Subindo uma aplicação de storage (S3) e compute (EC2) no LocalStack
-  - Uso de módulos para organizar o código
-  - Gerenciamento de estado
+### 7. Case final: Migração do projeto da AWS para a Azure (12:00 - 12:30)
+   - **Objetivo**: Demonstrar a migração de uma infraestrutura da AWS para a Azure usando Terraform.
+   - **Atividades**:
+     - Planejamento da migração e ajustes no código.
+     - Execução da migração passo a passo.
+     - Validação na Azure.
 
-- **Terceira Implementação**
-  - Subindo uma aplicação de storage e compute na AWS
-  - Integração com serviços AWS
-
-- **Hands-on Lab**
-  - Prática guiada: provisionar recursos na AWS e LocalStack
-
-### Encerramento
-
-- **Perguntas e Respostas**
-  - Sessão de perguntas e respostas
-  - Próximos passos e recursos adicionais
-  - Feedback dos participantes
-
-### Pré-requisitos
-
-- Conhecimento básico de AWS
-- Experiência com docker
-- Noções básicas de redes e segurança
-
-### Materiais Fornecidos
-
-- [Excalidraw](https://link.excalidraw.com/l/8pvW6zbNUnD/8ACp9pQ84Oz) e documentação do workshop
-- Exemplos de código Terraform
+### 8. Passo a passo: Como migrar projeto em Terraform entre diferentes provedores de nuvem (12:30 - 13:00)
+   - **Objetivo**: Adaptar o código Terraform para diferentes provedores de nuvem, focando em AWS e Azure.
+   - **Atividades**:
+     - Análise das diferenças entre provedores.
+     - Ajustes no código para suporte multi-cloud.
+     - Discussão sobre os desafios e soluções na migração multi-cloud.
 
 ## O que é o Terraform
 
@@ -158,58 +159,3 @@ graph TD;
     - `AWS API`: Interface de programação de aplicativos que o Terraform usa para consultar o estado atual da infraestrutura na AWS.
     - `AWS Infrastructure`: Representa a infraestrutura na AWS gerenciada pelo Terraform.
     - `Remote Backend`: Pode ser usado para armazenar o estado do Terraform remotamente (ex.: S3, Azure Blob Storage, etc.).
-
-### Processo de Funcionamento
-
-- Os arquivos locais (`main.tf`, `variables.tf`, `outputs.tf`) definem os recursos, variáveis e outputs para o Terraform.
-- O arquivo `terraform.tfstate` armazena o estado atual da infraestrutura gerenciada.
-- O Terraform Binary lê as definições dos arquivos locais e o estado armazenado.
-- O Terraform consulta o estado atual da infraestrutura na cloud através da `AWS API`.
-- Com base na comparação entre o estado armazenado e o estado atual consultado, o Terraform aplica as mudanças necessárias na `AWS Infrastructure`.
-- O estado pode ser armazenado remotamente em um `Remote Backend` para facilitar a colaboração e a segurança
-
-## Arquitetura de Servidores: Mutável vs Imutável
-
-```mermaid
-graph TD;
-
-    subgraph Arquitetura_Imutável
-        A2[Servidor com FastAPI] -->|Modificação| B2[Terraform]
-        B2 -->|Cria novo servidor| C2[Novo Servidor com FastAPI e NGINX]
-        B2 -->|Destrói servidor antigo| D2[Servidor antigo removido]
-    end
-
-    subgraph Arquitetura_Mutável
-        A1[Servidor com FastAPI] -->|Modificação| B1[Servidor com FastAPI e NGINX]
-        B1 -->|Altera configuração no servidor existente| C1[Servidor com FastAPI e NGINX alterado]
-    end
-
-```
-
-### Descrição do Diagrama
-
-#### Arquitetura Mutável
-
-1. **Servidor com FastAPI**: Inicialmente, temos um servidor rodando uma aplicação FastAPI.
-2. **Modificação**: Surge a necessidade de adicionar o NGINX.
-3. **Servidor com FastAPI e NGINX**: O servidor existente é modificado diretamente para incluir o NGINX.
-4. **Servidor com FastAPI e NGINX (alterado)**: A configuração é alterada no servidor existente, mantendo o mesmo servidor com a nova configuração.
-
-#### Arquitetura Imutável
-
-1. **Servidor com FastAPI**: Inicialmente, temos um servidor rodando uma aplicação FastAPI.
-2. **Modificação**: Surge a necessidade de adicionar o NGINX.
-3. **Terraform**: O Terraform é usado para criar a nova infraestrutura.
-4. **Novo Servidor com FastAPI e NGINX**: Um novo servidor é criado com a aplicação FastAPI e NGINX.
-5. **Servidor antigo removido**: O servidor antigo é destruído, garantindo que a infraestrutura seja imutável e que qualquer modificação resulte na criação de uma nova instância.
-
-### Vantagens da Arquitetura Imutável
-
-- **Consistência**: Garante que cada mudança na infraestrutura resulte em uma nova instância, evitando divergências de configuração.
-- **Reprodutibilidade**: Facilita a reprodução do ambiente, garantindo que as novas instâncias sejam idênticas.
-- **Facilidade de reversão**: Caso algo dê errado, é fácil reverter para a configuração anterior, simplesmente destruindo a nova instância e recriando a antiga.
-
-### Vantagens da Arquitetura Mutável
-
-- **Rapidez nas alterações**: Permite modificações rápidas no servidor existente.
-- **Menor custo**: Pode ser mais econômico em termos de recursos computacionais, pois não requer a criação de novas instâncias para cada alteração.
