@@ -30,7 +30,7 @@ Obrigado pela atualização! Aqui está a pauta ajustada para o workshop de Terr
 
 ### 2. Subindo uma aplicação de API sem Terraform na AWS (9:30 - 10:00)
 
-![imagem_02](/pics/02.png)
+![imagem_02](/pics/02.jpeg)
 
    - **Objetivo**: Demonstrar o processo manual de deploy de uma aplicação de API na AWS, sem utilizar Terraform.
    - **Atividades**:
@@ -54,17 +54,9 @@ Obrigado pela atualização! Aqui está a pauta ajustada para o workshop de Terr
      - Execução de scripts Terraform no ambiente simulado.
      - Discussão sobre as limitações e usos práticos do LocalStack.
 
-Aqui está a atualização das partes 5 e 6 do workshop, com a distribuição dos módulos do Terraform e a inclusão do tópico sobre o estado no bucket S3:
-
----
-
-## Parte 5: Modularização e Configuração de um Dashboard com Porta Liberada Externa e IP Fixo na AWS (11:00 - 11:30)
-
-### Objetivo
+### Parte 5: Modularização e Configuração de um Dashboard com Porta Liberada Externa e IP Fixo na AWS (11:00 - 11:30)
 
 Demonstrar como modularizar o código Terraform para configurar um dashboard na AWS com acesso externo e IP fixo, garantindo reutilização e manutenção eficiente do código.
-
-### Atividades
 
 1. **Introdução à Modularização do Terraform:**
    - **Criação de Módulos**:
@@ -79,7 +71,7 @@ Demonstrar como modularizar o código Terraform para configurar um dashboard na 
 3. **Testes de Acesso Externo**:
    - Validar o acesso externo ao dashboard através do IP fixo configurado.
 
-### Organograma da Aplicação
+#### Organograma da Aplicação
 
 ```mermaid
 graph TD
@@ -90,15 +82,11 @@ graph TD
     E --> F[IP Fixo Configurado via Módulo]
 ```
 
----
-
-## Parte 6: Estado do Terraform e Revisão do Código com Uso de Buckets S3 (11:30 - 12:00)
-
-### Objetivo
+### Parte 6: Estado do Terraform e Revisão do Código com Uso de Buckets S3 (11:30 - 12:00)
 
 Abordar o gerenciamento de estado no Terraform utilizando um bucket S3, além de revisar o código para garantir sua modularização, reutilização e manutenção eficaz.
 
-### Atividades
+#### Atividades
 
 1. **Introdução ao Estado do Terraform:**
    - Explicar a importância do estado no Terraform para o gerenciamento de infraestrutura.
@@ -122,7 +110,7 @@ Abordar o gerenciamento de estado no Terraform utilizando um bucket S3, além de
    - Discussão sobre boas práticas na organização do código, garantindo que ele esteja bem estruturado e fácil de manter.
    - Aplicação dos módulos em diferentes cenários para demonstrar sua reutilização.
 
-### Diagrama de Fluxo do Estado no S3
+#### Diagrama de Fluxo do Estado no S3
 
 ```mermaid
 graph TD
