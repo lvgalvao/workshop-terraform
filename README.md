@@ -20,17 +20,25 @@ Bem-vindo ao **Workshop de Terraform para Profissionais de Dados**! Este projeto
 Obrigado pela atualização! Aqui está a pauta ajustada para o workshop de Terraform, com o horário correto:
 
 ### 1. Abertura - O que queremos resolver? (9:00 - 9:30)
+
+![imagem_01](/pics/01.png)
+
    - **Objetivo**: Introduzir o Terraform, discutindo a importância de automação e a infraestrutura como código (IaC) para engenheiros de dados.
    - **Atividades**:
      - Apresentação dos objetivos do treinamento.
      - Discussão sobre os desafios de gerenciar infraestrutura em nuvem manualmente e como o Terraform pode ajudar.
 
 ### 2. Subindo uma aplicação de API sem Terraform na AWS (9:30 - 10:00)
+
+![imagem_02](/pics/02.png)
+
    - **Objetivo**: Demonstrar o processo manual de deploy de uma aplicação de API na AWS, sem utilizar Terraform.
    - **Atividades**:
      - Configuração manual da infraestrutura (EC2, Security Groups, etc.).
      - Deploy manual da aplicação API.
      - Discussão sobre as limitações desse processo manual.
+
+![imagem_03](/pics/03.png)
 
 ### 3. Subindo a mesma aplicação utilizando Terraform e comparações (10:00 - 10:30)
    - **Objetivo**: Mostrar como o Terraform pode automatizar o processo anterior e comparar as duas abordagens.
@@ -46,19 +54,84 @@ Obrigado pela atualização! Aqui está a pauta ajustada para o workshop de Terr
      - Execução de scripts Terraform no ambiente simulado.
      - Discussão sobre as limitações e usos práticos do LocalStack.
 
-### 5. Subindo um dashboard com porta liberada externa e IP fixo na AWS (11:00 - 11:30)
-   - **Objetivo**: Configurar um dashboard na AWS usando Terraform, com acesso externo e IP fixo.
-   - **Atividades**:
-     - Configuração de um dashboard na AWS.
-     - Ajustes de Security Groups e IP fixo.
-     - Testes de acesso externo.
+Aqui está a atualização das partes 5 e 6 do workshop, com a distribuição dos módulos do Terraform e a inclusão do tópico sobre o estado no bucket S3:
 
-### 6. Entrando em detalhes do módulo do Terraform e revisão do código (11:30 - 12:00)
-   - **Objetivo**: Modularizar o código Terraform para melhor reutilização e manutenção.
-   - **Atividades**:
-     - Criação de módulos Terraform.
-     - Refatoração do código existente para uso de módulos.
-     - Melhores práticas na organização do código.
+---
+
+## Parte 5: Modularização e Configuração de um Dashboard com Porta Liberada Externa e IP Fixo na AWS (11:00 - 11:30)
+
+### Objetivo
+
+Demonstrar como modularizar o código Terraform para configurar um dashboard na AWS com acesso externo e IP fixo, garantindo reutilização e manutenção eficiente do código.
+
+### Atividades
+
+1. **Introdução à Modularização do Terraform:**
+   - **Criação de Módulos**:
+     - **Módulo de EC2**: Contendo a lógica para criar instâncias EC2.
+     - **Módulo de Security Groups**: Contendo a lógica para configurar as regras de segurança.
+     - **Módulo de EIP (Elastic IP)**: Contendo a lógica para associar um IP fixo à instância EC2.
+
+2. **Configuração do Dashboard na AWS Usando Módulos**:
+   - Utilização dos módulos criados para configurar a infraestrutura necessária para o dashboard.
+   - Aplicação dos módulos para provisionar a instância EC2, configurar os Security Groups, e associar o IP fixo.
+
+3. **Testes de Acesso Externo**:
+   - Validar o acesso externo ao dashboard através do IP fixo configurado.
+
+### Organograma da Aplicação
+
+```mermaid
+graph TD
+    A[Usuário] --> B[HTTP Request]
+    B --> C[EC2 Instance: Dashboard]
+    C --> D[(RDS: Banco de Dados)]
+    C --> E[Security Groups Configurado via Módulo]
+    E --> F[IP Fixo Configurado via Módulo]
+```
+
+---
+
+## Parte 6: Estado do Terraform e Revisão do Código com Uso de Buckets S3 (11:30 - 12:00)
+
+### Objetivo
+
+Abordar o gerenciamento de estado no Terraform utilizando um bucket S3, além de revisar o código para garantir sua modularização, reutilização e manutenção eficaz.
+
+### Atividades
+
+1. **Introdução ao Estado do Terraform:**
+   - Explicar a importância do estado no Terraform para o gerenciamento de infraestrutura.
+   - Discussão sobre os desafios de gerenciar o estado localmente versus em um backend remoto.
+
+2. **Configuração de Backend Remoto com Bucket S3:**
+   - Configuração de um bucket S3 para armazenar o estado do Terraform.
+   - Configuração do backend do Terraform para utilizar o bucket S3:
+     ```hcl
+     terraform {
+       backend "s3" {
+         bucket = "meu-bucket-terraform"
+         key    = "estado/terraform.tfstate"
+         region = "us-east-1"
+       }
+     }
+     ```
+
+3. **Revisão do Código Modularizado:**
+   - Revisão dos módulos criados na parte anterior (EC2, Security Groups, EIP).
+   - Discussão sobre boas práticas na organização do código, garantindo que ele esteja bem estruturado e fácil de manter.
+   - Aplicação dos módulos em diferentes cenários para demonstrar sua reutilização.
+
+### Diagrama de Fluxo do Estado no S3
+
+```mermaid
+graph TD
+    A[Terraform Apply] --> B[Verificação de Estado]
+    B --> C[Bucket S3 com Estado Remoto]
+    C --> D[Provisionamento de Infraestrutura]
+    D --> E[Atualização do Estado no S3]
+    E --> F[Revisão e Manutenção do Código Modularizado]
+```
 
 ### 7. Case final: Migração do projeto da AWS para a Azure (12:00 - 12:30)
    - **Objetivo**: Demonstrar a migração de uma infraestrutura da AWS para a Azure usando Terraform.
