@@ -273,8 +273,6 @@ Seguindo esses passos, você terá sua aplicação FastAPI separada do banco de 
 
 Aqui está um README simplificado para o seu projeto, incorporando as instruções para instalar e usar o DuckDB para consultar uma tabela PostgreSQL:
 
----
-
 # FastAPI with PostgreSQL Integration using DuckDB
 
 Este projeto demonstra como integrar uma aplicação FastAPI com um banco de dados PostgreSQL utilizando DuckDB para consultas. O projeto inclui instruções para configurar o ambiente em uma instância EC2, instalar DuckDB, e executar consultas SQL diretamente no PostgreSQL.
@@ -312,6 +310,7 @@ export DATABASE_URL="postgresql://<username>:<password>@<rds-endpoint>:5432/<dat
 
 Digite os seguintes pontos
 
+```Python
 import os
 import duckdb
 
