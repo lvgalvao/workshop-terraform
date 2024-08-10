@@ -45,13 +45,13 @@ Claro! Aqui está a atualização para as partes do workshop, ajustando os tópi
      - Discussão sobre boas práticas e vantagens do Terraform.
      - Como gerenciar multiplos recursos
 
-### Parte 05 Variáveis e validação de variáveis (11:30 - 12:00)
+### Parte 05 Variáveis e validação de variáveis (11:30 - 11:45)
 
-### Parte 06 Terraform State e Console (12:30 - 13:00)
+### Parte 06 Terraform State e Console (11:45 - 12:00)
 
-### Parte 07 Migração do Projeto da AWS para Azure (12:00 - 12:30)
+### Parte 07 Migração do Projeto da AWS para Azure (12:30 - 13:00)
 
-### 8. Dúvidas e sorteios
+### Parte 08. Dúvidas e sorteios (13:30 - 14:00)
 
 ## O que é Terraform?
 
