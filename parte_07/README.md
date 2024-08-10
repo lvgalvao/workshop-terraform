@@ -14,52 +14,59 @@ Claro! Vou criar um diagrama usando Mermaid que compara os recursos da AWS com o
 
 ### Diagrama Mermaid
 
-Entendi! Vou criar um diagrama com uma correspondência 1 para 1 entre os recursos AWS e Azure. Aqui está a arquitetura reformulada:
-
 ```mermaid
 graph TD
     subgraph AWS
-        A[VPC] -->|Criar Subnets| B[Subnet Pública]
-        A --> C[Subnet Privada]
-        B --> D[Internet Gateway]
-        B --> E[Route Table]
-        E --> F[Associar Subnets]
-        G[Security Group] --> H[RDS PostgreSQL]
-        G --> I[EC2]
+        VPC_AWS[VPC]
+        Subnet_Public_A_AWS[Subnet Pública A]
+        Subnet_Public_B_AWS[Subnet Pública B]
+        Subnet_Private_A_AWS[Subnet Privada A]
+        Subnet_Private_B_AWS[Subnet Privada B]
+        IGW_AWS[Internet Gateway]
+        RT_Public_AWS[Route Table Pública]
+        SG_AWS[Security Group]
+        EC2_AWS[EC2 Instance]
+        RDS_AWS[RDS PostgreSQL]
     end
-
+    
     subgraph Azure
-        J[VNET] -->|Criar Subnets| K[Subnet Pública]
-        J --> L[Subnet Privada]
-        K --> M[Internet Gateway]
-        K --> N[Route Table]
-        N --> O[Associar Subnets]
-        P[Network Security Group] --> Q[Azure SQL Database]
-        P --> R[Virtual Machine]
+        RG_AZURE[Resource Group]
+        VNET_AZURE[Virtual Network]
+        Subnet_Public_A_AZURE[Public Subnet A]
+        Subnet_Private_A_AZURE[Private Subnet A]
+        NSG_AZURE[Network Security Group]
+        VM_AZURE[Virtual Machine]
+        SQL_AZURE[SQL Database]
     end
 
-    A --- J
-    B --- K
-    C --- L
-    D --- M
-    E --- N
-    G --- P
-    H --- Q
-    I --- R
+    VPC_AWS -->|Contains| Subnet_Public_A_AWS
+    VPC_AWS -->|Contains| Subnet_Public_B_AWS
+    VPC_AWS -->|Contains| Subnet_Private_A_AWS
+    VPC_AWS -->|Contains| Subnet_Private_B_AWS
+    VPC_AWS -->|Contains| IGW_AWS
+    VPC_AWS -->|Uses| RT_Public_AWS
+    VPC_AWS -->|Uses| SG_AWS
+    VPC_AWS -->|Contains| EC2_AWS
+    VPC_AWS -->|Contains| RDS_AWS
+    
+    RG_AZURE -->|Contains| VNET_AZURE
+    VNET_AZURE -->|Contains| Subnet_Public_A_AZURE
+    VNET_AZURE -->|Contains| Subnet_Private_A_AZURE
+    VNET_AZURE -->|Uses| NSG_AZURE
+    VNET_AZURE -->|Contains| VM_AZURE
+    VNET_AZURE -->|Contains| SQL_AZURE
+
+    Subnet_Public_A_AWS --> IGW_AWS
+    Subnet_Public_A_AWS --> RT_Public_AWS
+    Subnet_Private_A_AWS --> SG_AWS
+
+    Subnet_Public_A_AZURE -->|Uses| NSG_AZURE
+    Subnet_Private_A_AZURE -->|Uses| NSG_AZURE
+
+    EC2_AWS -->|Connects to| RDS_AWS
+    VM_AZURE -->|Connects to| SQL_AZURE
 ```
 
-### Explicação:
-
-- **VPC (AWS)** → **VNET (Azure)**: Rede virtual.
-- **Subnet Pública (AWS)** → **Subnet Pública (Azure)**: Subrede acessível publicamente.
-- **Subnet Privada (AWS)** → **Subnet Privada (Azure)**: Subrede isolada.
-- **Internet Gateway (AWS)** → **Internet Gateway (Azure)**: Gateway para acesso à internet.
-- **Route Table (AWS)** → **Route Table (Azure)**: Tabela de roteamento para as subnets.
-- **Security Group (AWS)** → **Network Security Group (Azure)**: Grupo de segurança para controlar acesso.
-- **RDS PostgreSQL (AWS)** → **Azure SQL Database (Azure)**: Banco de dados gerenciado.
-- **EC2 (AWS)** → **Virtual Machine (Azure)**: Instância de máquina virtual.
-
-Se precisar de ajustes ou quiser adicionar mais detalhes, é só me avisar!
 ### Descrição das Equivalências
 
 - **VPC (AWS)** ↔ **Virtual Network (Azure)**
@@ -103,3 +110,7 @@ flowchart TD
     F --> |Não| J[Validação Final e Documentação]
     J --> K[Fim]
 ```
+
+https://github.com/hashicorp/terraform-provider-azurerm/issues/9344
+
+ssh -i ~/.ssh/id_rsa adminuser@104.41.45.245

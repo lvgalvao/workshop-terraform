@@ -1,4 +1,4 @@
 fastapi
-SQLAlchemy
+sqlalchemy
 uvicorn
-psycopg2-binary
+pyodbc
