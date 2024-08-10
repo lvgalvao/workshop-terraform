@@ -1,86 +1,224 @@
-### Implementações e Prática
+# Terraform Streamlit Deployment
 
-- **Primeira Implementação**
-  - Subindo uma aplicação de Docker no Streamlit
-  - Uso de variáveis e outputs
-  - Comandos básicos: `init`, `plan`, `apply`, e `destroy`
+Este projeto usa Terraform para configurar e implantar uma aplicação Streamlit em uma instância EC2 na AWS. Ele cria toda a infraestrutura necessária, incluindo uma VPC, sub-rede pública, gateway de internet, tabela de roteamento, grupo de segurança e a instância EC2.
 
-- **Segunda Implementação**
-  - Subindo uma aplicação de storage (S3) e compute (EC2) no LocalStack
-  - Uso de módulos para organizar o código
-  - Gerenciamento de estado
+## Requisitos
 
-- **Terceira Implementação**
-  - Subindo uma aplicação de storage e compute na AWS
-  - Integração com serviços AWS
+- Conta na AWS
+- Terraform instalado
+- Chave SSH configurada para acessar a instância EC2
 
-- **Hands-on Lab**
-  - Prática guiada: provisionar recursos na AWS e LocalStack
+## Arquivos do Projeto
 
-### Encerramento
+- `main.tf`: Configuração principal do Terraform.
+- `vpc.tf`: Configuração da VPC, sub-rede pública, gateway de internet e tabela de roteamento.
+- `security_group.tf`: Configuração do grupo de segurança.
+- `ec2.tf`: Configuração da instância EC2 e script de inicialização.
 
-- **Perguntas e Respostas**
-  - Sessão de perguntas e respostas
-  - Próximos passos e recursos adicionais
-  - Feedback dos participantes
+## Por que precisamos de uma VPC?
 
-### Pré-requisitos
+Uma VPC (Virtual Private Cloud) é uma rede virtual dedicada à sua conta AWS. Ela permite que você isole e controle completamente o ambiente de rede de suas instâncias EC2. Pense na VPC como uma casa com várias salas (sub-redes), onde você pode controlar quem entra e quem sai, garantindo que seus recursos estejam seguros e bem organizados.
 
-- Conhecimento básico de AWS
-- Experiência com docker
-- Noções básicas de redes e segurança
+## Por que precisamos de um Grupo de Segurança?
 
-### Processo de Funcionamento
+O grupo de segurança funciona como uma "parede de segurança" ao redor da sua instância EC2. Ele define as regras de entrada e saída para controlar o tráfego de rede. Sem um grupo de segurança, sua instância estaria vulnerável a acessos indesejados. No nosso projeto, configuramos o grupo de segurança para permitir o acesso SSH (porta 22) e HTTP (porta 8501) para a aplicação Streamlit.
 
-- Os arquivos locais (`main.tf`, `variables.tf`, `outputs.tf`) definem os recursos, variáveis e outputs para o Terraform.
-- O arquivo `terraform.tfstate` armazena o estado atual da infraestrutura gerenciada.
-- O Terraform Binary lê as definições dos arquivos locais e o estado armazenado.
-- O Terraform consulta o estado atual da infraestrutura na cloud através da `AWS API`.
-- Com base na comparação entre o estado armazenado e o estado atual consultado, o Terraform aplica as mudanças necessárias na `AWS Infrastructure`.
-- O estado pode ser armazenado remotamente em um `Remote Backend` para facilitar a colaboração e a segurança
+## Estrutura do Projeto
 
-## Arquitetura de Servidores: Mutável vs Imutável
+Aqui está um gráfico em Mermaid para visualizar a infraestrutura:
 
 ```mermaid
 graph TD;
-
-    subgraph Arquitetura_Imutável
-        A2[Servidor com FastAPI] -->|Modificação| B2[Terraform]
-        B2 -->|Cria novo servidor| C2[Novo Servidor com FastAPI e NGINX]
-        B2 -->|Destrói servidor antigo| D2[Servidor antigo removido]
-    end
-
-    subgraph Arquitetura_Mutável
-        A1[Servidor com FastAPI] -->|Modificação| B1[Servidor com FastAPI e NGINX]
-        B1 -->|Altera configuração no servidor existente| C1[Servidor com FastAPI e NGINX alterado]
-    end
-
+    A[Terraform] --> B[VPC]
+    B --> C[Sub-rede Pública]
+    B --> D[Gateway de Internet]
+    C --> E[Tabela de Roteamento]
+    C --> F[Grupo de Segurança]
+    C --> G[Instância EC2]
+    F --> G
+    E --> C
 ```
 
-### Descrição do Diagrama
+## Passos para Implantação
 
-#### Arquitetura Mutável
+1. **Clone o Repositório:**
 
-1. **Servidor com FastAPI**: Inicialmente, temos um servidor rodando uma aplicação FastAPI.
-2. **Modificação**: Surge a necessidade de adicionar o NGINX.
-3. **Servidor com FastAPI e NGINX**: O servidor existente é modificado diretamente para incluir o NGINX.
-4. **Servidor com FastAPI e NGINX (alterado)**: A configuração é alterada no servidor existente, mantendo o mesmo servidor com a nova configuração.
+   ```sh
+   git clone https://github.com/lvgalvao/terraform-streamlit.git
+   cd terraform-streamlit
+   ```
 
-#### Arquitetura Imutável
+2. **Inicialize o Terraform:**
 
-1. **Servidor com FastAPI**: Inicialmente, temos um servidor rodando uma aplicação FastAPI.
-2. **Modificação**: Surge a necessidade de adicionar o NGINX.
-3. **Terraform**: O Terraform é usado para criar a nova infraestrutura.
-4. **Novo Servidor com FastAPI e NGINX**: Um novo servidor é criado com a aplicação FastAPI e NGINX.
-5. **Servidor antigo removido**: O servidor antigo é destruído, garantindo que a infraestrutura seja imutável e que qualquer modificação resulte na criação de uma nova instância.
+   ```sh
+   terraform init
+   ```
 
-### Vantagens da Arquitetura Imutável
+3. **Planeje a Infraestrutura:**
 
-- **Consistência**: Garante que cada mudança na infraestrutura resulte em uma nova instância, evitando divergências de configuração.
-- **Reprodutibilidade**: Facilita a reprodução do ambiente, garantindo que as novas instâncias sejam idênticas.
-- **Facilidade de reversão**: Caso algo dê errado, é fácil reverter para a configuração anterior, simplesmente destruindo a nova instância e recriando a antiga.
+   ```sh
+   terraform plan
+   ```
 
-### Vantagens da Arquitetura Mutável
+4. **Aplique a Configuração:**
 
-- **Rapidez nas alterações**: Permite modificações rápidas no servidor existente.
-- **Menor custo**: Pode ser mais econômico em termos de recursos computacionais, pois não requer a criação de novas instâncias para cada alteração.
+   ```sh
+   terraform apply
+   ```
+
+5. **Acesse a Aplicação:**
+
+   Use o endereço IP público exibido no output do Terraform para acessar a aplicação Streamlit no navegador:
+
+   ```
+   http://<instance_public_ip>:8501
+   ```
+
+## Arquivos de Configuração
+
+### `main.tf`
+
+```hcl
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+```
+
+### `vpc.tf`
+
+```hcl
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = "main_vpc"
+  }
+}
+
+resource "aws_subnet" "public" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public_subnet"
+  }
+}
+
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "main_gw"
+  }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+
+  tags = {
+    Name = "public_rt"
+  }
+}
+
+resource "aws_route_table_association" "a" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+```
+
+### `security_group.tf`
+
+```hcl
+resource "aws_security_group" "allow_ssh_http" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 8501
+    to_port     = 8501
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "allow_ssh_http"
+  }
+}
+```
+
+### `ec2.tf`
+
+```hcl
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  owners = ["099720109477"] # Ubuntu
+}
+
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.allow_ssh_http.id]
+
+  tags = {
+    Name = "HelloStreamlit"
+  }
+
+  user_data = <<-EOF
+              #!/bin/bash
+              sudo apt-get update
+              sudo apt-get install -y docker.io git
+              sudo systemctl start docker
+              sudo systemctl enable docker
+
+              # Clonar o repositório do GitHub
+              git clone https://github.com/lvgalvao/terraform-streamlit.git /app
+
+              # Construir e executar o contêiner Docker
+              cd /app
+              sudo docker build -t streamlit-app .
+              sudo docker run -d -p 8501:8501 streamlit-app
+              EOF
+}
+
+output "instance_public_ip" {
+  value = aws_instance.web.public_ip
+}
+```
+
+### Conclusão
+
+Este projeto demonstra como usar Terraform para configurar uma infraestrutura AWS e implantar uma aplicação Streamlit em uma instância EC2. Seguindo os passos acima, você poderá acessar e interagir com sua aplicação Streamlit na AWS.
