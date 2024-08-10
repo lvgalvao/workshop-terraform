@@ -10,18 +10,12 @@ Este projeto usa Terraform para configurar e implantar uma aplicação Streamlit
 
 ## Arquivos do Projeto
 
-- `main.tf`: Configuração principal do Terraform.
+- `main.tf`: Configuração principal do Terraform e configuração do backend remoto.
+- `remote.tf`: Configuração do backend remoto.
+- `variables.tf`: Declaração das variáveis utilizadas na configuração.
 - `vpc.tf`: Configuração da VPC, sub-rede pública, gateway de internet e tabela de roteamento.
 - `security_group.tf`: Configuração do grupo de segurança.
 - `ec2.tf`: Configuração da instância EC2 e script de inicialização.
-
-## Por que precisamos de uma VPC?
-
-Uma VPC (Virtual Private Cloud) é uma rede virtual dedicada à sua conta AWS. Ela permite que você isole e controle completamente o ambiente de rede de suas instâncias EC2. Pense na VPC como uma casa com várias salas (sub-redes), onde você pode controlar quem entra e quem sai, garantindo que seus recursos estejam seguros e bem organizados.
-
-## Por que precisamos de um Grupo de Segurança?
-
-O grupo de segurança funciona como uma "parede de segurança" ao redor da sua instância EC2. Ele define as regras de entrada e saída para controlar o tráfego de rede. Sem um grupo de segurança, sua instância estaria vulnerável a acessos indesejados. No nosso projeto, configuramos o grupo de segurança para permitir o acesso SSH (porta 22) e HTTP (porta 8501) para a aplicação Streamlit.
 
 ## Estrutura do Projeto
 
@@ -39,56 +33,165 @@ graph TD;
     E --> C
 ```
 
-## Passos para Implantação
+## Guia de Sintaxe de Configuração do Terraform
 
-1. **Clone o Repositório:**
+Este guia fornece uma visão geral detalhada da sintaxe de configuração do Terraform, que é projetada para ser legível e fácil de escrever. O Terraform utiliza a sintaxe HCL (HashiCorp Configuration Language), que é uma linguagem de configuração rica e intuitiva.
 
-   ```sh
-   git clone https://github.com/lvgalvao/terraform-streamlit.git
-   cd terraform-streamlit
-   ```
+## Estrutura da Linguagem Terraform
 
-2. **Inicialize o Terraform:**
+### Argumentos
 
-   ```sh
-   terraform init
-   ```
+Os argumentos são usados para atribuir valores a nomes específicos. A sintaxe básica é a seguinte:
 
-3. **Planeje a Infraestrutura:**
+```hcl
+argument_name = "value"
+```
 
-   ```sh
-   terraform plan
-   ```
+- **Nome do argumento**: O identificador antes do sinal de igual (`=`).
+- **Valor do argumento**: A expressão após o sinal de igual (`=`).
 
-4. **Aplique a Configuração:**
+Os valores dos argumentos podem ser literais ou gerados a partir de outras expressões. Cada tipo de recurso tem um esquema que define os tipos válidos para seus argumentos.
 
-   ```sh
-   terraform apply
-   ```
+**Exemplo:**
 
-5. **Acesse a Aplicação:**
+```hcl
+image_id = "ami-12345678"
+```
 
-   Use o endereço IP público exibido no output do Terraform para acessar a aplicação Streamlit no navegador:
+### Blocos
 
-   ```
-   http://<instance_public_ip>:8501
-   ```
+Blocos são contêineres para outros conteúdos. A sintaxe básica de um bloco é:
+
+```hcl
+block_type "block_name" {
+  # Conteúdo do bloco
+}
+```
+
+- **Tipo de bloco**: Define o tipo de bloco (por exemplo, `resource`, `variable`).
+- **Nome do bloco**: Nome arbitrário dado à instância do bloco (por exemplo, `example`).
+
+Os blocos podem conter outros blocos e argumentos, criando uma hierarquia. A estrutura de um bloco é delimitada pelos caracteres `{` e `}`.
+
+**Exemplo de Bloco de Recurso:**
+
+```hcl
+resource "aws_instance" "example" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+
+  network_interface {
+    # Configurações adicionais
+  }
+}
+```
+
+Neste exemplo:
+- O tipo de bloco é `resource`.
+- O bloco possui dois rótulos: `aws_instance` (tipo de recurso) e `example` (nome da instância do recurso).
+- O bloco `network_interface` é um bloco aninhado dentro do bloco principal `aws_instance`.
+
+### Identificadores
+
+Identificadores são usados para nomes de argumentos, tipos de blocos e outros elementos do Terraform. As regras para identificadores incluem:
+
+- Podem conter letras, dígitos, sublinhados (`_`) e hífens (`-`).
+- O primeiro caractere não deve ser um dígito.
+
+**Exemplo de Identificadores:**
+
+```hcl
+resource "aws_instance" "my_instance" {
+  instance_type = "t2.micro"
+}
+```
+
+Neste exemplo:
+- `aws_instance` é o tipo de bloco.
+- `my_instance` é o identificador da instância do recurso.
+
+### Comentários
+
+O Terraform suporta três tipos de sintaxe para comentários:
+
+1. **Comentário de Linha Única**:
+   - `#`: Começa um comentário que vai até o final da linha.
+   - `//`: Alternativa para o comentário de linha única. Pode ser transformado em `#` por ferramentas de formatação automática.
+
+2. **Comentário de Múltiplas Linhas**:
+   - `/* ... */`: Delimitadores para comentários que podem se estender por várias linhas.
+
+**Exemplo de Comentários:**
+
+```hcl
+# Este é um comentário de linha única
+
+// Este também é um comentário de linha única
+
+/*
+Este é um comentário
+que pode ocupar várias linhas
+*/
+```
+
+### Considerações Adicionais
+
+- **Documentação HCL**: A documentação completa da sintaxe HCL pode ser consultada na [especificação da sintaxe HCL](https://github.com/hashicorp/hcl).
+
+- **Formato de Código**: Ferramentas automáticas podem converter comentários `//` para `#` para manter a consistência com a sintaxe recomendada.
+
+Compreender a sintaxe básica e os blocos do Terraform ajuda na criação e gerenciamento eficaz das configurações de infraestrutura como código. Se você deseja se aprofundar, consulte a [documentação oficial do Terraform](https://www.terraform.io/docs) para mais detalhes.
+
 
 ## Arquivos de Configuração
 
 ### `main.tf`
 
 ```hcl
+provider "aws" {
+  region = "us-east-1"
+}
+```
+
+### `remote.tf`
+
+```hcl
 terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-    }
+  backend "s3" {
+    # Substitua "bucket-para-salvar-o-estado" pelo nome do seu bucket S3
+    bucket         = "bucket-para-salvar-o-estado"
+    # O caminho do arquivo de estado dentro do bucket S3
+    key            = "terraform-test.tfstate"
+    # Região onde o bucket S3 está localizado
+    region         = "us-east-1"
+    encrypt        = true  # Ativa a criptografia
+  }
+}
+```
+
+### `variables.tf`
+
+```hcl
+variable "image_id" {
+  description = "ID da AMI a ser usada"
+  type        = string
+  default     = "ami-0870650fde0fef2d4"
+
+  validation {
+    condition     = length(var.image_id) > 4 && substr(var.image_id, 0, 4) == "ami-"
+    error_message = "O image_id deve ser um ID de AMI válido, começando com \"ami-\"."
   }
 }
 
-provider "aws" {
-  region = "us-east-1"
+variable "instance_type" {
+  description = "Tipo de instância EC2"
+  type        = string
+  default     = "t2.micro"
+
+  validation {
+    condition     = var.instance_type != ""
+    error_message = "O tipo de instância não pode ser vazio."
+  }
 }
 ```
 
@@ -176,60 +279,32 @@ resource "aws_security_group" "allow_ssh_http" {
 ### `ec2.tf`
 
 ```hcl
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  owners = ["099720109477"] # Ubuntu
-}
-
-resource "aws_instance" "web" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.public.id
-  vpc_security_group_ids = [aws_security_group.allow_ssh_http.id]
+resource "aws_instance" "streamlit" {
+  ami           = var.image_id
+  instance_type = var.instance_type
+  key_name      = "your-key-name"
 
   tags = {
-    Name = "HelloStreamlit"
+    Name = "streamlit_instance"
   }
 
   user_data = <<-EOF
               #!/bin/bash
-              sudo apt-get update
-              sudo apt-get install -y docker.io git
-              sudo systemctl start docker
-              sudo systemctl enable docker
-
-              # Clonar o repositório do GitHub
-              git clone https://github.com/lvgalvao/terraform-streamlit.git /app
-
-              # Construir e executar o contêiner Docker
-              cd /app
-              sudo docker build -t streamlit-app .
-              sudo docker run -d -p 8501:8501 streamlit-app
+              apt update
+              apt install -y python3-pip
+              pip3 install streamlit
+              echo 'streamlit run /home/ubuntu/app.py' >> /etc/rc.local
               EOF
-}
-
-output "instance_public_ip" {
-  value = aws_instance.web.public_ip
 }
 ```
 
-### Conclusão
-
-Este projeto demonstra como usar Terraform para configurar uma infraestrutura AWS e implantar uma aplicação Streamlit em uma instância EC2. Seguindo os passos acima, você poderá acessar e interagir com sua aplicação Streamlit na AWS.
-
-Claro! Vamos completar o código do Terraform para suportar o uso de workspaces e, ao mesmo tempo, criar e gerenciar as branches no Git para separar os ambientes de `dev` e `prod`.
+## Estratégia de Branch com Git e Terraform Workspaces
 
 ### Passos para Configuração do Terraform com Workspaces
 
 1. **Configurando Git para Branches**
 
-   No diretório raiz do seu projeto, você pode configurar e gerenciar suas branches `dev` e `prod`. Aqui estão os comandos necessários:
+   No diretório raiz do seu projeto, você pode configurar e gerenciar suas branches dev e prod. Aqui estão os comandos necessários:
 
    ```bash
    # Inicializar um repositório Git (se ainda não estiver inicializado)
@@ -252,6 +327,8 @@ Claro! Vamos completar o código do Terraform para suportar o uso de workspaces 
    # Voltar para a branch 'dev'
    git checkout dev
    ```
+
+2. **Gerenciando Workspaces com Terraform**
 
    Para alternar entre os ambientes e aplicar as mudanças usando o Terraform, você deve fazer o seguinte:
 

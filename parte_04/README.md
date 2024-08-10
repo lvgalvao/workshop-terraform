@@ -1,456 +1,328 @@
-# Introdução à Cloud
+### README.md
 
-## O que é Cloud?
+# Terraform AWS Infrastructure Setup
 
-A computação em nuvem, ou simplesmente "cloud", é a entrega de diferentes serviços pela internet. Esses serviços incluem armazenamento, bancos de dados, servidores, redes, software, entre outros. A cloud permite que empresas e indivíduos utilizem recursos de computação e armazenamento conforme necessário, pagando apenas pelo que usam, sem a necessidade de possuir e manter infraestrutura física.
+Este projeto configura uma infraestrutura básica na AWS utilizando Terraform. A infraestrutura inclui uma VPC personalizada, subnets públicas e privadas, uma instância EC2 e um banco de dados RDS PostgreSQL.
 
-### Vantagens da Computação em Nuvem
+![imagem](/arquitetura.png)
 
-- **Escalabilidade:** Capacidade de aumentar ou diminuir recursos conforme a demanda.
-- **Custo-Efetivo:** Pague apenas pelo que usa, eliminando a necessidade de grandes investimentos iniciais em hardware.
-- **Acessibilidade:** Acesso a recursos e dados de qualquer lugar com uma conexão à internet.
-- **Segurança:** Provedores de cloud oferecem altos níveis de segurança e conformidade com normas internacionais.
+## Arquivos do Projeto
 
-### Diagrama da Estrutura de Cloud com AWS
+- `main.tf`: Define os recursos principais da AWS, como VPC, subnets, security groups, instância EC2 e RDS PostgreSQL.
+- `outputs.tf`: Define os outputs que o Terraform fornecerá após a execução, como os IDs e endereços IP.
+- `variables.tf`: Define as variáveis que serão usadas no Terraform para configurar o banco de dados RDS.
+- `terraform.tfvars`: Define os valores das variáveis que serão passados para o Terraform.
 
-```mermaid
-graph TD;
-    subgraph Cloud
-        subgraph IAM_AWS
-           IAM[Identity and Access Management IAM]
-        end
-        subgraph EC2
-            subgraph Zona_Brasil
-                M1[Máquina 1]
-                M2[Máquina 2]
-            end
-            subgraph Zona_US
-                M3[Máquina 3]
-                M4[Máquina 4]
-            end
-        end
-    end
+## Explicação de Cada Bloco de Código
 
-    subgraph API_AWS
-        API[API AWS]
-    end
-
-
-    subgraph Camadas_de_Interação
-        Console[Console AWS]
-        CLI[Terminal AWS CLI]
-        Terraform[Terraform]
-    end
-
-    Console --> API
-    CLI --> API
-    Terraform --> API
-    API --> IAM
-    IAM --> EC2
-```
-
-### Descrição do Diagrama
-
-- **Cloud:** Representa a nuvem como um todo, onde os recursos são hospedados.
-- **EC2 (Elastic Compute Cloud):** Serviço de computação em nuvem da AWS que oferece capacidade de processamento escalável.
-  - **Zona Brasil:** Zona de disponibilidade que contém Máquinas 1 e 2.
-  - **Zona US:** Zona de disponibilidade que contém Máquinas 3 e 4.
-- **API AWS:** Interface de programação de aplicativos que permite interações automatizadas com os recursos AWS.
-- **IAM (Identity and Access Management):** Serviço da AWS que controla o acesso aos recursos da AWS.
-- **Camadas de Interação:** Diferentes formas de interagir e gerenciar os recursos na AWS.
-  - **Console AWS:** Interface gráfica da AWS para gerenciar e visualizar recursos.
-  - **Terminal AWS CLI:** Interface de linha de comando para gerenciar recursos AWS.
-  - **Terraform:** Ferramenta de infraestrutura como código para provisionar e gerenciar recursos na AWS.
-
-### Exemplos de Uso
-
-1. **Escalabilidade com EC2:**
-   - Suponha que sua aplicação precisa lidar com um aumento repentino de tráfego.
-   - Com EC2, você pode facilmente aumentar a capacidade adicionando mais instâncias (máquinas virtuais) na zona Brasil ou na zona US.
-
-2. **Automatização com Terraform:**
-   - Utilizando o Terraform, você pode definir a infraestrutura necessária em arquivos de configuração.
-   - Executando os comandos do Terraform, ele provisionará automaticamente os recursos na AWS conforme definido.
-
-## Case AWS 01
-
-### O que é uma VPC?
-
-**Virtual Private Cloud (VPC)** é um serviço da Amazon Web Services (AWS) que permite a criação de uma rede virtual privada dentro da infraestrutura de nuvem da AWS. A VPC proporciona controle total sobre o ambiente de rede virtual, incluindo a seleção de intervalos de endereços IP, criação de sub-redes, configuração de tabelas de roteamento e gateways de rede.
-
-#### Características da VPC
-
-- **Isolamento:** Cada VPC é logicamente isolada de outras VPCs na nuvem da AWS.
-- **Controle:** Proporciona controle total sobre a configuração de rede, permitindo definir endereços IP, criar sub-redes, configurar tabelas de roteamento e gateways de internet.
-- **Segurança:** Suporte a grupos de segurança e listas de controle de acesso (ACLs) para gerenciar e controlar o tráfego de entrada e saída.
-
-### O que é uma Sub-rede?
-
-**Sub-rede** é uma divisão lógica de uma rede IP maior, como uma VPC. As sub-redes permitem a segmentação da rede em partes menores, facilitando a organização e a gestão dos recursos.
-
-#### Características da Sub-rede
-
-- **Segmentação:** Divide a VPC em áreas menores e gerenciáveis, cada uma com um intervalo de endereços IP específico.
-- **Isolamento de Recursos:** Permite isolar recursos com diferentes requisitos de segurança e controle de acesso.
-- **Roteamento:** Cada sub-rede pode ter suas próprias tabelas de roteamento, definindo como o tráfego deve ser direcionado.
-
-### O que é EC2?
-
-**Amazon Elastic Compute Cloud (EC2)** é um serviço da AWS que fornece capacidade de computação redimensionável na nuvem. Ele permite o provisionamento de instâncias de servidores virtuais, que podem ser configuradas e gerenciadas conforme as necessidades do usuário.
-
-## Arquitetura
-
-```mermaid
-graph TD;
-    subgraph VPC["VPC: main_vpc"]
-        subgraph Subnet["Subnet: main_subnet"]
-            EC2["EC2 Instance: app_server"]
-        end
-    end
-
-    EC2 -->|runs in| Subnet
-    Subnet -->|is part of| VPC
-```
-
-## Código Terraform
+### 1. `provider "aws"` - Provedor AWS
 
 ```hcl
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
-
-  required_version = ">= 1.2.0"
-}
-
 provider "aws" {
-  region  = "us-west-2"
+  region = "sa-east-1"
 }
+```
 
-# Criação de uma nova VPC
+Este bloco especifica o provedor AWS e a região onde os recursos serão criados. No caso, a região é `sa-east-1` (São Paulo).
+
+### 2. `aws_vpc` - Virtual Private Cloud (VPC)
+
+```hcl
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 
   tags = {
-    Name = "main_vpc"
+    Name = "MainVPC"
+  }
+}
+```
+
+Este bloco cria uma VPC com o bloco CIDR `10.0.0.0/16`. A VPC serve como a rede virtual onde todos os outros recursos serão criados.
+
+### 3. `aws_subnet` - Subnets Públicas e Privadas
+
+- **Subnets Públicas**:
+
+```hcl
+resource "aws_subnet" "public_a" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.10.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "sa-east-1a"
+
+  tags = {
+    Name = "PublicSubnetA"
   }
 }
 
-# Criação de uma sub-rede dentro da VPC
-resource "aws_subnet" "main" {
+resource "aws_subnet" "public_b" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.11.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "sa-east-1b"
+
+  tags = {
+    Name = "PublicSubnetB"
+  }
+}
+```
+
+Esses blocos criam duas subnets públicas em diferentes zonas de disponibilidade (`sa-east-1a` e `sa-east-1b`). As subnets públicas são usadas para hospedar a instância EC2.
+
+- **Subnets Privadas**:
+
+```hcl
+resource "aws_subnet" "private_a" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-west-2a"
+  cidr_block        = "10.0.20.0/24"
+  availability_zone = "sa-east-1a"
 
   tags = {
-    Name = "main_subnet"
+    Name = "PrivateSubnetA"
   }
 }
 
-# Criação de uma instância EC2 dentro da sub-rede criada
-resource "aws_instance" "app_server" {
-  ami           = "ami-830c94e3"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.main.id
-
-  tags = {
-    Name = "ExampleAppServerInstance"
-  }
-}
-```
-
-### Descrição das Modificações
-
-1. **Criação de uma VPC:**
-   - `aws_vpc` recurso para criar uma VPC com o bloco CIDR `10.0.0.0/16`.
-
-2. **Criação de uma Sub-rede:**
-   - `aws_subnet` recurso para criar uma sub-rede dentro da VPC com o bloco CIDR `10.0.1.0/24` na zona de disponibilidade `us-west-2a`.
-
-3. **Especificação da Sub-rede na Instância EC2:**
-   - `subnet_id` parâmetro adicionado ao recurso `aws_instance` para associar a instância à sub-rede criada.
-
-### Comandos Terraform
-
-#### Terraform Block
-
-O bloco `terraform {}` contém configurações do Terraform, incluindo os provedores necessários que o Terraform usará para provisionar sua infraestrutura. Para cada provedor, o atributo `source` define um hostname opcional, um namespace e o tipo de provedor. O Terraform instala provedores do Terraform Registry por padrão. Nesta configuração de exemplo, a fonte do provedor `aws` é definida como `hashicorp/aws`, que é uma abreviação para `registry.terraform.io/hashicorp/aws`.
-
-Você também pode definir uma restrição de versão para cada provedor definido no bloco `required_providers`. O atributo `version` é opcional, mas recomendamos usá-lo para restringir a versão do provedor para que o Terraform não instale uma versão que não funcione com sua configuração. Se você não especificar uma versão do provedor, o Terraform fará o download automático da versão mais recente durante a inicialização.
-
-#### Providers
-
-O bloco `provider` configura o provedor especificado, neste caso `aws`. Um provedor é um plugin que o Terraform usa para criar e gerenciar seus recursos.
-
-Você pode usar múltiplos blocos de provedor em sua configuração Terraform para gerenciar recursos de diferentes provedores. Você pode até usar diferentes provedores juntos. Por exemplo, você pode passar o endereço IP da sua instância EC2 da AWS para um recurso de monitoramento do DataDog.
-
-#### Resources
-
-Use blocos `resource` para definir componentes de sua infraestrutura. Um recurso pode ser um componente físico ou virtual, como uma instância EC2, ou pode ser um recurso lógico, como uma aplicação Heroku.
-
-Os blocos de recursos têm duas strings antes do bloco: o tipo de recurso e o nome do recurso. Neste exemplo, o tipo de recurso é `aws_instance` e o nome é `app_server`. O prefixo do tipo mapeia para o nome do provedor. Na configuração de exemplo, o Terraform gerencia o recurso `aws_instance` com o provedor `aws`. Juntos, o tipo de recurso e o nome formam um ID único para o recurso. Por
-
- exemplo, o ID para sua instância EC2 é `aws_instance.app_server`.
-
-Os blocos de recursos contêm argumentos que você usa para configurar o recurso. Os argumentos podem incluir coisas como tamanhos de máquina, nomes de imagens de disco ou IDs de VPC. Nossa lista de provedores referencia os argumentos obrigatórios e opcionais para cada recurso. Para sua instância EC2, a configuração de exemplo define o ID do AMI como uma imagem do Ubuntu e o tipo de instância como `t2.micro`, que se qualifica para o nível gratuito da AWS. Também define uma tag para dar um nome à instância.
-
-#### Inicializar o Diretório
-
-Quando você cria uma nova configuração — ou verifica uma configuração existente a partir do controle de versão — você precisa inicializar o diretório com `terraform init`.
-
-Inicializar um diretório de configuração faz o download e instala os provedores definidos na configuração, que neste caso é o provedor `aws`.
-
-```sh
-terraform init
-```
-
-#### Formatar e Validar a Configuração
-
-Recomendamos usar formatação consistente em todos os seus arquivos de configuração. O comando `terraform fmt` atualiza automaticamente as configurações no diretório atual para legibilidade e consistência.
-
-```sh
-terraform fmt
-```
-
-Você também pode garantir que sua configuração seja sintaticamente válida e internamente consistente usando o comando `terraform validate`.
-
-```sh
-terraform validate
-```
-
-#### Criar Infraestrutura
-
-Aplique a configuração agora com o comando `terraform apply`. O Terraform imprimirá um plano de execução que descreve as ações que o Terraform tomará para alterar sua infraestrutura para corresponder à configuração.
-
-```sh
-terraform apply
-```
-
-#### Inspecionar o Estado
-
-Quando você aplica sua configuração, o Terraform grava dados em um arquivo chamado `terraform.tfstate`. O Terraform armazena os IDs e propriedades dos recursos que gerencia neste arquivo, para que possa atualizar ou destruir esses recursos no futuro.
-
-Inspecione o estado atual usando `terraform show`.
-
-```sh
-terraform show
-```
-
-#### Gerenciar o Estado Manualmente
-
-O Terraform tem um comando embutido chamado `terraform state` para gerenciamento avançado de estado. Use o subcomando `list` para listar os recursos no estado do seu projeto.
-
-```sh
-terraform state list
-```
-
-### Modificar Infraestrutura
-
-A infraestrutura está em constante evolução, e o Terraform ajuda você a gerenciar essas mudanças. Ao modificar configurações do Terraform, ele cria um plano de execução que altera apenas o necessário para alcançar o estado desejado.
-
-#### Código Modificado
-
-```hcl
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
-  required_version = ">= 1.2.0"
-}
-
-provider "aws" {
-  region  = "us-west-2"
-}
-
-# Criação de uma nova VPC
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-  tags = {
-    Name = "main_vpc"
-  }
-}
-
-# Criação de uma sub-rede dentro da VPC
-resource "aws_subnet" "main" {
+resource "aws_subnet" "private_b" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-west-2a"
-  tags = {
-    Name = "main_subnet"
-  }
-}
+  cidr_block        = "10.0.21.0/24"
+  availability_zone = "sa-east-1b"
 
-# Criação de uma instância EC2 dentro da sub-rede criada
-resource "aws_instance" "app_server" {
-  ami           = "ami-08d70e59c07c61a3a"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.main.id
   tags = {
-    Name = "ExampleAppServerInstance"
+    Name = "PrivateSubnetB"
   }
 }
 ```
 
-##### **Inicialize a Configuração**
+Esses blocos criam duas subnets privadas em diferentes zonas de disponibilidade (`sa-east-1a` e `sa-east-1b`). As subnets privadas são usadas para o banco de dados RDS, garantindo que ele não seja acessível diretamente da internet.
 
-```sh
-terraform init
-```
+Criar múltiplas subnets, tanto públicas quanto privadas, em diferentes Zonas de Disponibilidade (AZs) é uma prática comum em arquiteturas de infraestrutura na nuvem, especialmente na AWS. Vou explicar o motivo disso:
 
-##### **Aplique a Configuração**
+### 1. **Alta Disponibilidade**
 
-```sh
-terraform apply
-```
+- **Zonas de Disponibilidade (AZs)**: Cada região da AWS é composta por múltiplas Zonas de Disponibilidade, que são centros de dados fisicamente separados e independentes dentro de uma mesma região. Se uma AZ falhar, os recursos em outra AZ continuarão funcionando.
+- **Redundância**: Ao criar subnets em diferentes AZs, você garante que seus recursos estejam distribuídos geograficamente dentro da mesma região. Isso protege sua aplicação contra falhas em uma única AZ. Por exemplo, se você tiver uma instância EC2 em `sa-east-1a` e outra em `sa-east-1b`, uma falha em `sa-east-1a` não afetará a instância em `sa-east-1b`.
 
-Após aplicar com sucesso a configuração inicial, você pode continuar com as modificações.
+### 2. **Melhor Performance e Failover**
 
-#### Modificar a Configuração
+- **Load Balancing**: Com múltiplas subnets públicas, você pode distribuir o tráfego de entrada de forma mais eficiente. Um balanceador de carga (ELB) pode ser configurado para distribuir o tráfego entre instâncias EC2 em diferentes AZs.
+- **Failover Automático**: Para bancos de dados como o RDS, a AWS pode configurar automaticamente o failover para uma réplica em uma AZ diferente em caso de falha da AZ principal. Para suportar esse cenário, você precisa de subnets em diferentes AZs.
 
-Atualize o AMI da sua instância. Altere o recurso `aws_instance.app_server` substituindo o ID do AMI atual por um novo.
+### 3. **Conformidade e Resiliência**
 
-```diff
- resource "aws_instance" "app_server" {
--  ami           = "ami-830c94e3"
-+  ami           = "ami-08d70e59c07c61a3a"
-   instance_type = "t2.micro"
- }
-```
+- **Conformidade com Padrões de Indústria**: Muitas arquiteturas de referência da AWS e práticas recomendadas de segurança e conformidade exigem a distribuição de recursos em várias AZs para atender a requisitos de resiliência e conformidade.
+- **Redução de Latência**: Ter instâncias em diferentes AZs permite que você atenda melhor a usuários de diferentes partes da região, minimizando a latência.
 
-#### Aplicar Mudanças
+### 4. **Backup e Recuperação de Desastres**
 
-Depois de alterar a configuração, execute `terraform apply` novamente para ver como o Terraform aplicará essa mudança aos recursos existentes.
+- **Planejamento para Recuperação de Desastres**: Ao distribuir seus recursos em várias AZs, você pode planejar melhor para cenários de recuperação de desastres, garantindo que a perda de uma AZ não afete totalmente sua aplicação.
+- **Redundância de Banco de Dados**: Para bancos de dados críticos, como o RDS, você pode configurar réplicas em diferentes AZs para garantir que seus dados estejam seguros e acessíveis mesmo em caso de falhas.
 
-Esses passos e código atualizado mostram como modificar a infraestrutura existente usando o Terraform, garantindo que apenas as mudanças necessárias sejam aplicadas para alcançar o estado desejado.
+### Resumindo
 
-### Destruir Infraestrutura com Terraform
+- **Subnets Públicas em Múltiplas AZs**: São usadas para hospedar instâncias EC2 e outros recursos que precisam de acesso à internet. Ter duas subnets públicas em diferentes AZs garante que o tráfego de entrada possa ser gerenciado mesmo em caso de falha em uma AZ.
+  
+- **Subnets Privadas em Múltiplas AZs**: São usadas para hospedar recursos que não precisam de acesso direto à internet, como bancos de dados e servidores de aplicativos. Ter duas subnets privadas em diferentes AZs garante que esses recursos possam continuar funcionando e acessíveis mesmo em caso de falha em uma AZ.
 
-Agora que você criou e atualizou uma instância EC2 na AWS com Terraform, vamos aprender a destruir essa infraestrutura.
+### Quando Você Pode Não Precisar de Múltiplas Subnets
 
-Quando você não precisar mais da infraestrutura, pode ser desejável destruí-la para reduzir a exposição a riscos de segurança e custos. Por exemplo, você pode remover um ambiente de produção do serviço ou gerenciar ambientes de curta duração, como sistemas de compilação ou teste. Além de construir e modificar a infraestrutura, o Terraform também pode destruir ou recriar a infraestrutura que ele gerencia.
+- **Ambientes de Desenvolvimento ou Teste**: Se você está apenas criando um ambiente para desenvolvimento ou teste, ou se a alta disponibilidade não é uma preocupação, você pode simplificar criando apenas uma subnet pública e uma privada.
+- **Redução de Custo**: Em alguns casos, se você deseja reduzir os custos e a complexidade, pode optar por usar apenas uma AZ, embora isso sacrifique a alta disponibilidade.
 
-#### Destruir Infraestrutura
+Por fim, a decisão de usar múltiplas subnets em diferentes AZs geralmente depende do requisito de alta disponibilidade, resiliência e conformidade da sua aplicação.
 
-O comando `terraform destroy` termina os recursos gerenciados pelo seu projeto Terraform. Este comando é o inverso do `terraform apply`, pois termina todos os recursos especificados no estado do Terraform. Ele não destrói recursos que estão sendo executados em outros lugares e que não são gerenciados pelo projeto Terraform atual.
-
-#### Passos para Destruir Recursos
-
-##### **Destruir Recursos**
-
-Execute o comando para destruir os recursos que você criou:
-
-```sh
-terraform destroy
-```
-
-##### **Confirme a Destruição**
-
-O Terraform mostrará um plano de execução que descreve as ações que serão tomadas para destruir a infraestrutura. Confirme a execução digitando `yes` quando solicitado.
-
-```sh
-Do you really want to destroy all resources?
-Terraform will destroy all your managed infrastructure, as shown above.
-There is no undo. Only 'yes' will be accepted to confirm.
-
-Enter a value: yes
-```
-
-### Define Input Variables
-
-Agora que você já tem conhecimento suficiente sobre o Terraform para criar configurações úteis, vamos tornar nossa configuração mais dinâmica e flexível utilizando variáveis.
-
-#### Pré-requisitos
-
-Após seguir os tutoriais anteriores, você deve ter um diretório chamado `learn-terraform-aws-instance` com a seguinte configuração em um arquivo chamado `main.tf`.
+### 4. `aws_internet_gateway` - Gateway de Internet
 
 ```hcl
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
-  required_version = ">= 1.2.0"
-}
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
 
-provider "aws" {
-  region  = "us-west-2"
-}
-
-resource "aws_instance" "app_server" {
-  ami           = "ami-08d70e59c07c61a3a"
-  instance_type = "t2.micro"
   tags = {
-    Name = "ExampleAppServerInstance"
+    Name = "MainInternetGateway"
   }
 }
 ```
 
-### Definindo Variáveis de Entrada
+Este bloco cria um gateway de internet, permitindo que os recursos dentro da VPC tenham acesso à internet. É necessário para permitir que as instâncias EC2 em subnets públicas se conectem à internet.
 
-A configuração atual inclui vários valores fixos. As variáveis do Terraform permitem que você escreva configurações mais flexíveis e fáceis de reutilizar.
+### 5. `aws_route_table` e `aws_route_table_association` - Tabelas de Roteamento
 
-#### Criar Variável para Nome da Instância
-
-Adicione uma variável para definir o nome da instância.
-
-Crie um novo arquivo chamado `variables.tf` com um bloco definindo uma nova variável `instance_name`.
+- **Tabela de Roteamento**:
 
 ```hcl
-variable "instance_name" {
-  description = "Value of the Name tag for the EC2 instance"
-  type        = string
-  default     = "ExampleAppServerInstance"
-}
-```
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
 
-O Terraform carrega todos os arquivos no diretório atual que terminam em `.tf`, portanto, você pode nomear seus arquivos de configuração como preferir.
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
 
-#### Atualizar `main.tf`
-
-No arquivo `main.tf`, atualize o bloco do recurso `aws_instance` para usar a nova variável. O bloco da variável `instance_name` usará seu valor padrão ("ExampleAppServerInstance") a menos que você declare um valor diferente.
-
-```hcl
-resource "aws_instance" "app_server" {
-  ami           = "ami-08d70e59c07c61a3a"
-  instance_type = "t2.micro"
   tags = {
-    Name = var.instance_name
+    Name = "PublicRouteTable"
   }
 }
 ```
 
-### Aplicar a Configuração
+Este bloco cria uma tabela de roteamento para a VPC, permitindo que o tráfego de saída vá para a internet através do gateway de internet.
 
-#### Inicialize a Configuração
+- **Associações de Tabela de Roteamento**:
 
-```sh
-terraform init
+```hcl
+resource "aws_route_table_association" "public_a" {
+  subnet_id      = aws_subnet.public_a.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "public_b" {
+  subnet_id      = aws_subnet.public_b.id
+  route_table_id = aws_route_table.public.id
+}
 ```
 
-#### Aplique a Configuração
+Esses blocos associam a tabela de roteamento pública às subnets públicas, permitindo que as instâncias nessas subnets se conectem à internet.
 
-```sh
-terraform apply
+### 6. `aws_security_group` - Grupo de Segurança
+
+```hcl
+resource "aws_security_group" "allow_ec2_rds" {
+  vpc_id = aws_vpc.main.id
+
+  # Regra para permitir acesso à porta 5432 (PostgreSQL)
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]  # Permitir tráfego da subnet privada
+  }
+
+  # Regra para permitir acesso SSH (porta 22) de qualquer lugar
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # Permitir acesso SSH de qualquer lugar
+  }
+
+  # Regra para permitir acesso HTTP (porta 80) de qualquer lugar
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # Permitir acesso HTTP de qualquer lugar
+  }
+
+  # Regras de egress (saída) permitindo todo o tráfego de saída
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "AllowEC2RDS"
+  }
+}
 ```
 
-Responda ao prompt de confirmação com `yes`.
+Este bloco cria um grupo de segurança que permite:
 
-O Terraform criará a instância EC2 com o nome definido na variável `instance_name`.
+- Acesso ao PostgreSQL na porta 5432, mas apenas dentro da VPC.
+- Acesso SSH na porta 22 de qualquer lugar (pode ser restrito a IPs específicos para maior segurança).
+- Acesso HTTP na porta 80 de qualquer lugar.
 
-### Sobrescrever Variável na Linha de Comando
+### 7. `aws_db_subnet_group` e `aws_db_instance` - RDS PostgreSQL
 
-Aplique a configuração novamente, desta vez sobrescrevendo o nome padrão da instância passando uma variável com o flag `-var`.
+- **Subnets do RDS**:
 
-```sh
-terraform apply -var "instance_name=YetAnotherName"
+```hcl
+resource "aws_db_subnet_group" "postgres" {
+  name       = "postgres-subnet-group"
+  subnet_ids = [
+    aws_subnet.private_a.id,
+    aws_subnet.private_b.id
+  ]
+
+  tags = {
+    Name = "PostgresSubnetGroup"
+  }
+}
 ```
 
-Responda ao prompt de confirmação com `yes`. O Terraform atualizará a tag `Name` da instância com o novo nome
+Este bloco cria um grupo de subnets para o RDS PostgreSQL, utilizando as subnets privadas para garantir que o banco de dados esteja protegido.
+
+- **Instância do RDS PostgreSQL**:
+
+```hcl
+resource "aws_db_instance" "postgres" {
+  engine            = "postgres"
+  engine_version    = "16.3"  # Mantém a versão atual
+  instance_class    = "db.t3.micro"
+  allocated_storage = 20
+  db_name           = var.db_name
+  username          = var.db_username
+  password          = var.db_password
+  publicly_accessible = false
+  multi_az          = false  # Desativando Multi-AZ
+  vpc_security_group_ids = [aws_security_group.allow_ec2_rds.id]
+  db_subnet_group_name = aws_db_subnet_group.postgres.name
+  skip_final_snapshot = true
+
+  tags = {
+    Name = "PostgresDBInstance"
+  }
+}
+```
+
+Este bloco cria uma instância do RDS PostgreSQL, configurada para não ser acessível publicamente e com Multi-AZ desativado para um ambiente de desenvolvimento.
+
+### 8. `aws_instance` - Instância EC2
+
+```hcl
+resource "aws_instance" "web" {
+  ami           = "ami-09523541dfaa61c85"
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.public_a.id
+  
+  vpc_security_group_ids = [aws_security_group.allow_ec2_rds.id]
+
+  user_data = base64encode(templatefile("user_data.sh.tpl", {
+    db_username = var.db_username,
+    db_password = var.db_password,
+    db_address  = aws_db_instance.postgres.address,
+    db_name     = var.db_name
+  }))
+
+  depends_on = [aws_db_instance.postgres]
+
+  tags = {
+    Name = "MyEC2Instance"
+  }
+}
+```
+
+## Caso eu queira 2 instancias do EC2?
+
+```hcl
+resource "aws_instance" "web" {
+  count         = 2
+  ami           = "ami-09523541dfaa61c85"
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.public_a.id
+  
+  vpc_security_group_ids = [aws_security_group.allow_ec2_rds.id]
+
+  user_data = base64encode(templatefile("user_data.sh.tpl", {
+    db_username = var.db_username,
+    db_password = var.db_password,
+    db_address  = aws_db_instance.postgres.address,
+    db_name     = var.db_name
+  }))
+
+  depends_on = [aws_db_instance.postgres]
+
+  tags = {
+    Name = "MyEC2Instance-${count.index + 1}"
+  }
+}
+```

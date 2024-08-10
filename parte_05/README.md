@@ -1,120 +1,113 @@
-### Trabalhando com Múltiplos Providers no Terraform
+No Terraform, variáveis são usadas para parametrizar e modularizar suas configurações de infraestrutura, tornando-as mais flexíveis e reutilizáveis. Elas permitem que você defina valores que podem ser usados em vários lugares do seu código Terraform e que podem ser modificados facilmente sem alterar o código principal.
 
-No Terraform, você pode usar múltiplos providers para gerenciar recursos em diferentes ambientes ou regiões. Isso é particularmente útil quando você precisa orquestrar infraestrutura distribuída ou interagir com vários serviços de diferentes provedores de nuvem. Vamos explorar como configurar e utilizar múltiplos providers com base em um exemplo prático.
+### **Variáveis em Terraform**
 
-#### Configurando Múltiplos Providers
+#### **Definição de Variáveis**
 
-Quando você deseja utilizar múltiplos providers, você deve definir cada provider com um alias. Isso permite que você faça referência específica a cada provider em suas configurações de recursos.
-
-**Exemplo de Configuração com Múltiplos Providers:**
+As variáveis são definidas em arquivos `.tf` usando o bloco `variable`. Um exemplo básico de definição de variável é:
 
 ```hcl
-provider "aws" {
-  region = "us-east-1"
-}
-
-provider "aws" {
-  alias  = "west-2"
-  region = "us-west-2"
+variable "instance_type" {
+  description = "Tipo de instância EC2 a ser utilizado"
+  type        = string
+  default     = "t2.micro"
 }
 ```
 
-Neste exemplo, estamos configurando dois providers AWS: um para a região `us-east-1` e outro para a região `us-west-2`. O segundo provider usa um alias `west-2` para diferenciá-lo do provider padrão.
+- **`description`**: Uma breve descrição do que a variável representa.
+- **`type`**: O tipo de dado da variável (por exemplo, `string`, `number`, `bool`, `list`, `map`).
+- **`default`**: Um valor padrão para a variável (opcional).
 
-#### Usando Data Sources com Múltiplos Providers
+#### **Uso de Variáveis**
 
-Data sources permitem que você busque informações sobre recursos existentes. Quando utiliza múltiplos providers, você pode especificar o provider a ser usado com o atributo `provider`.
-
-**Exemplo de Data Sources:**
+As variáveis definidas podem ser usadas em recursos e módulos Terraform:
 
 ```hcl
-data "aws_ami" "ubuntu_east" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  owners = ["099720109477"] # Ubuntu
-}
-
-data "aws_ami" "ubuntu_west" {
-  provider    = aws.west-2
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  owners = ["099720109477"] # Ubuntu
+resource "aws_instance" "web" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
 }
 ```
 
-#### Criando Recursos com Múltiplos Providers
+### **Validadores de Variáveis**
 
-Você pode criar recursos utilizando os diferentes providers configurados. Para isso, você precisa especificar qual provider utilizar para cada recurso.
+Os validadores de variáveis ajudam a garantir que os valores fornecidos para as variáveis estejam no formato correto e atendam a critérios específicos. Eles são definidos dentro do bloco `validation` dentro da definição da variável.
 
-**Exemplo de Recursos:**
+#### **Exemplo de Validação**
 
 ```hcl
-resource "aws_instance" "web_east" {
-  ami           = data.aws_ami.ubuntu_east.id
-  instance_type = "t2.micro"
+variable "image_id" {
+  description = "ID da imagem (AMI) a ser usada para a instância."
+  type        = string
+  default     = "ami-0870650fde0fef2d4"
 
-  tags = {
-    Name = "WebServerEast"
-  }
-}
-
-resource "aws_instance" "web_west" {
-  provider      = aws.west-2
-  ami           = data.aws_ami.ubuntu_west.id
-  instance_type = "t2.micro"
-
-  tags = {
-    Name = "WebServerWest"
+  validation {
+    condition     = length(var.image_id) > 4 && substr(var.image_id, 0, 4) == "ami-"
+    error_message = "O valor do image_id deve ser um ID de AMI válido, começando com 'ami-'."
   }
 }
 ```
 
-### Descrição do Exemplo
+- **`condition`**: Uma expressão que deve ser verdadeira para que o valor da variável seja considerado válido. Pode usar funções e operadores para criar condições complexas.
+- **`error_message`**: Mensagem exibida se a condição não for atendida, ajudando a orientar o usuário sobre o que está errado com o valor fornecido.
 
-1. **Configuração dos Providers:**
-   - **Provider Padrão:** Configurado para a região `us-east-1`.
-   - **Provider com Alias:** Configurado para a região `us-west-2` usando o alias `west-2`.
+### **Outros Tipos de Validação**
 
-2. **Data Sources:**
-   - **Data Source `aws_ami.ubuntu_east`:** Busca o AMI mais recente do Ubuntu na região `us-east-1`.
-   - **Data Source `aws_ami.ubuntu_west`:** Busca o AMI mais recente do Ubuntu na região `us-west-2` utilizando o provider `aws.west-2`.
+- **Range de Números**:
+  ```hcl
+  variable "instance_count" {
+    description = "Número de instâncias a serem criadas"
+    type        = number
+    default     = 1
 
-3. **Recursos:**
-   - **Recurso `aws_instance.web_east`:** Cria uma instância EC2 na região `us-east-1` utilizando o AMI buscado pelo data source `aws_ami.ubuntu_east`.
-   - **Recurso `aws_instance.web_west`:** Cria uma instância EC2 na região `us-west-2` utilizando o AMI buscado pelo data source `aws_ami.ubuntu_west` e especificando o provider `aws.west-2`.
+    validation {
+      condition     = var.instance_count > 0
+      error_message = "O número de instâncias deve ser maior que 0."
+    }
+  }
+  ```
 
-### Benefícios de Utilizar Múltiplos Providers
+- **Valores Permitidos**:
+  ```hcl
+  variable "environment" {
+    description = "Ambiente de implantação"
+    type        = string
+    default     = "development"
 
-1. **Gerenciamento de Infraestrutura Distribuída:**
-   - Permite gerenciar recursos em múltiplas regiões ou contas de provedor de nuvem, facilitando a distribuição geográfica da infraestrutura.
+    validation {
+      condition     = var.environment in ["development", "staging", "production"]
+      error_message = "O ambiente deve ser um dos seguintes: development, staging, production."
+    }
+  }
+  ```
 
-2. **Isolamento e Organização:**
-   - Facilita o isolamento de ambientes de desenvolvimento, teste e produção, permitindo configurações específicas para cada ambiente.
+### **Uso de Variáveis no Terraform CLI**
 
-3. **Flexibilidade e Escalabilidade:**
-   - Oferece flexibilidade para integrar múltiplos serviços de diferentes provedores em uma única configuração de infraestrutura como código.
+As variáveis podem ser fornecidas de várias maneiras:
 
-### Diagrama em Mermaid
+1. **Arquivos de Variáveis (`.tfvars`)**:
+   ```hcl
+   instance_type = "t2.large"
+   ```
 
-```mermaid
-graph TD;
-    A[Terraform] --> B[Providers]
-    B --> C[AWS East]
-    B --> D[AWS West]
-    C --> E[EC2, S3, RDS, ...]
-    D --> F[EC2, S3, RDS, ...]
-```
+   Arquivo `terraform.tfvars`:
+   ```hcl
+   instance_type = "t2.large"
+   ```
 
-### Conclusão
+2. **Linha de Comando**:
+   ```bash
+   terraform apply -var="instance_type=t2.large"
+   ```
 
-Utilizar múltiplos providers no Terraform é uma prática poderosa que permite gerenciar infraestrutura complexa e distribuída de maneira eficiente e organizada. Com a configuração correta, você pode orquestrar recursos em diferentes regiões e provedores de serviços, garantindo flexibilidade e escalabilidade para suas operações de infraestrutura.
+3. **Variáveis de Ambiente**:
+   ```bash
+   export TF_VAR_instance_type="t2.large"
+   ```
+
+### **Resumo**
+
+- **Variáveis**: Facilitam a parametrização e reutilização de configurações.
+- **Validadores**: Garantem que os valores das variáveis atendam a critérios específicos, evitando erros e garantindo a integridade da configuração.
+
+O uso adequado de variáveis e validadores ajuda a criar configurações mais robustas e flexíveis no Terraform, promovendo melhores práticas e reduzindo a probabilidade de erros.
