@@ -222,3 +222,63 @@ output "instance_public_ip" {
 ### Conclusão
 
 Este projeto demonstra como usar Terraform para configurar uma infraestrutura AWS e implantar uma aplicação Streamlit em uma instância EC2. Seguindo os passos acima, você poderá acessar e interagir com sua aplicação Streamlit na AWS.
+
+Claro! Vamos completar o código do Terraform para suportar o uso de workspaces e, ao mesmo tempo, criar e gerenciar as branches no Git para separar os ambientes de `dev` e `prod`.
+
+### Passos para Configuração do Terraform com Workspaces
+
+1. **Configurando Git para Branches**
+
+   No diretório raiz do seu projeto, você pode configurar e gerenciar suas branches `dev` e `prod`. Aqui estão os comandos necessários:
+
+   ```bash
+   # Inicializar um repositório Git (se ainda não estiver inicializado)
+   git init
+
+   # Criar a branch 'dev' e alternar para ela
+   git checkout -b dev
+
+   # Adicionar e fazer commit dos arquivos da branch 'dev'
+   git add .
+   git commit -m "Configuração inicial para o ambiente dev"
+
+   # Criar e alternar para a branch 'prod'
+   git checkout -b prod
+
+   # Adicionar e fazer commit dos arquivos da branch 'prod'
+   git add .
+   git commit -m "Configuração inicial para o ambiente prod"
+
+   # Voltar para a branch 'dev'
+   git checkout dev
+   ```
+
+   Para alternar entre os ambientes e aplicar as mudanças usando o Terraform, você deve fazer o seguinte:
+
+   ```bash
+   # Alternar para a branch 'dev'
+   git checkout dev
+
+   # Inicializar o Terraform e criar o workspace de desenvolvimento
+   terraform init
+   terraform workspace new dev
+   terraform workspace select dev
+   terraform apply
+
+   # Alternar para a branch 'prod'
+   git checkout prod
+
+   # Inicializar o Terraform e criar o workspace de produção
+   terraform init
+   terraform workspace new prod
+   terraform workspace select prod
+   terraform apply
+   ```
+
+### Considerações Adicionais
+
+- **Variáveis e Arquivos de Configuração**: Caso você precise de variáveis diferentes para dev e prod, você pode criar arquivos `variables.tf` e `terraform.tfvars` específicos para cada ambiente e referenciá-los nos arquivos `main.tf`.
+
+- **Controle de Versão**: Certifique-se de adicionar e versionar todos os arquivos necessários no Git para que o estado e a configuração estejam sempre atualizados e possam ser gerenciados corretamente.
+
+Isso permitirá que você use o Terraform com workspaces para isolar seus ambientes de desenvolvimento e produção, enquanto gerencia a configuração de cada ambiente em branches separadas no Git.
